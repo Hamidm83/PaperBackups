@@ -1,0 +1,605 @@
+%%
+%% Copyright 2007, 2008, 2009 Elsevier Ltd
+%%
+%% This file is part of the 'Elsarticle Bundle'.
+%% ---------------------------------------------
+%%
+%% It may be distributed under the conditions of the LaTeX Project Public
+%% License, either version 1.2 of this license or (at your option) any
+%% later version.  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.2 or later is part of all distributions of LaTeX
+%% version 1999/12/01 or later.
+%%
+%% The list of all files belonging to the 'Elsarticle Bundle' is
+%% given in the file `manifest.txt'.
+%%
+
+%% Template article for Elsevier's document class `elsarticle'
+%% with numbered style bibliographic references
+%% SP 2008/03/01
+%%
+%%
+%%
+%% $Id: elsarticle-template-num.tex 4 2009-10-24 08:22:58Z rishi $
+%%
+%%
+\documentclass[preprint,12pt,3p]{elsarticle}
+
+%% Use the option review to obtain double line spacing
+%% \documentclass[preprint,review,12pt]{elsarticle}
+
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+%% \documentclass[final,1p,times]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn]{elsarticle}
+%% \documentclass[final,3p,times]{elsarticle}
+%% \documentclass[final,3p,times,twocolumn]{elsarticle}
+%% \documentclass[final,5p,times]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn]{elsarticle}
+
+%% if you use PostScript figures in your article
+%% use the graphics package for simple commands
+%% \usepackage{graphics}
+%% or use the graphicx package for more complicated commands
+%% \usepackage{graphicx}
+%% or use the epsfig package if you prefer to use the old commands
+%% \usepackage{epsfig}
+
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+\usepackage{amsthm}
+% algorithmic package for writing algorithms
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{url}
+
+%% The lineno packages adds line numbers. Start line numbering with
+%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
+%% for the whole article with \linenumbers after \end{frontmatter}.
+%% \usepackage{lineno}
+
+%% natbib.sty is loaded by default. However, natbib options can be
+%% provided with \biboptions{...} command. Following options are
+%% valid:
+
+%%   round  -  round parentheses are used (default)
+%%   square -  square brackets are used   [option]
+%%   curly  -  curly braces are used      {option}
+%%   angle  -  angle brackets are used    <option>
+%%   semicolon  -  multiple citations separated by semi-colon
+%%   colon  - same as semicolon, an earlier confusion
+%%   comma  -  separated by comma
+%%   numbers-  selects numerical citations
+%%   super  -  numerical citations as superscripts
+%%   sort   -  sorts multiple citations according to order in ref. list
+%%   sort&compress   -  like sort, but also compresses numerical citations
+%%   compress - compresses without sorting
+%%
+%% \biboptions{comma,round}
+
+% \biboptions{}
+
+
+%\journal{Nuclear Physics B}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Detecting sudden moving objects in a series of digital images with different exposure times\tnoteref{label0}}
+%\title{Sample article to present \texttt{elsarticle} class\tnoteref{label0}}
+%\tnotetext[label0]{This is only an example}
+
+
+\author[label1]{Hamid Mahmoudabadi\corref{cor1}\fnref{label3}}
+
+%\cortext[cor1]{I am corresponding author}
+%\fntext[label3]{I also want to inform about\ldots}
+%\fntext[label4]{Small city}
+
+\ead{mahmoudabadi.h@gmail.com}
+%\ead[url]{author-one-homepage.com}
+
+\author[label1]{Michael J. Olsen}
+\address[label1]{Oregon State University, Corvallis, OR, USA}
+\ead{michael.olsen@oregonstate.edu}
+
+\author[label1]{Sinisa Todorovic}
+\ead{sinisa@eecs.oregonstate.edu}
+
+\begin{abstract}
+	
+This paper presents an algorithm to detect sudden objects appears in a set of digital images to create a high dynamic range image (HDR) which is becoming more important with the widespread use of consumer cameras.  Sudden object is an object that appears in just one of the images in the set that are showing the same scene from the same viewpoint but captured with different exposure times. While detecting moving object is documented deeply, a new approach is presented to detect sudden object as a form of very fast abrupt moving object (sudden object). The algorithm advances existing methods because it does not require: 1) robust estimation of a camera response function, 2) supervision of objects in the scene such as explicit object detection and tracking, and 3) selection of a reference image. In this approach, every image in the set is first partitioned into patches of equal sizes. Next, the properties of values within the window of the same patch are compared between the images to identify differences. To this end, image patches are described by histograms of oriented gradients (HOG). A statistical classifier is developed to recognize significant differences between patch descriptors and identify patches containing sudden objects. Finally, a k-nearest neighbor algorithm is applied for each patch to minimize false detections by ensuring that its neighborhood contains suspected moving object patches before giving a final designation. Additionally, a sensitivity analysis indicated that the best performance occurs with four to six digital images.  However, the optimal patch size is dependent on the size  of the moving object to be detected. When patch sizes and exposure ranges are not optimized, the approach results in Matthew's correlation coefficient (MCC) values around 0.51 on images from both indoor and outdoor scenes. However, when selecting the proper patch sizes, the proposed approach yields significantly improved results with MCC values near 0.82. 
+
+\end{abstract}
+
+\begin{keyword}
+%% keywords here, in the form: keyword \sep keyword
+Moving object, High DYnamic Range, HDR, ghost artifact, HOG, SVD % \sep \LaTeX \sep template
+%% MSC codes here, in the form: \MSC code \sep code
+%% or \MSC[2008] code \sep code (2000 is the default)
+\end{keyword}
+
+\end{frontmatter}
+
+
+\section{Introduction}
+\label{sec1}
+
+The High Dynamic Range (HDR) imaging technique \cite{6} is a solution to capture the wide range of light present in a scene, preserving detail in both dark and bright areas. Constructing an HDR image of a scene using non-HDR cameras requires capturing multiple LDR (low dynamic range) images of the same scene with varying exposure levels, and subsequently combining these LDR images. In this case, objects which move during the acquisition process can show different appearances across multiple images and therefore, they can lead to ghost artifacts in the resulting HDR image. A typical example is given in Figure \ref{fig:image1} which shows five LDR images with different exposures and there is a car as a sudden object in the scene in one of the captures. The fused HDR result is shown in Figure \ref{fig:image1} (f). The caused artifacts of the sudden object (car) can be clearly seen in the fused image encircled by a red line.
+
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth,keepaspectratio]{./images/image1}
+\caption{Example of a ghost effect (encircled by red line) generated in a HDR image (f) when combining an image set of LDR images (a,b,c,d,e) where one contains a sudden moving object (d-(car))}
+\label{fig:image1}
+\end{figure}
+
+The goal of this paper is introducing an approach to identify the LDR images' patches as either sudden moving object(ghost) or not. Because the scene's lighting and the images' exposures are diverse, training a machine learning technique is not feasible. Hence, we need an adaptive per-image, per-patch (group of pixel) approach to estimate moving objects and work well with imagery acquired in noisy, uncontrolled, real-world environments.
+
+While most of the existing methods are dealing with moving objects in the sense of continuous movement in the scene captured during exposures, this paper is focused on an object that appears completely in just one exposure and disappears within a scene, which is much more challenging.  
+
+ In this paper, we present a novel approach for sudden moving object, which advances existing methods, because it does not require: 1) Robust estimation of camera response function (CRF), 2) Supervision about objects in the scene, and thus explicit object detection and tracking, and 3) Selection of the reference image without moving object.\\
+ To test the algorithm several databases were generated in various indoor and outdoor scenes which are available at\\ \url{https://drive.google.com/folderview?id=0Bx3Kuqq6AlEMVGowTWE5NTRSelU&usp=sharing}
+ 
+%After a literature review highlighting previous work, the remainder of this paper is organized to describe steps of this approach as follows: 1) partitioning all images into patches of equal sizes and using the center of each patch as an image feature, 2) grouping images two by two (Pairing Images) based on their exposure values (EV), 3) calculating and evaluating descriptors for image features, and finally, 4) applying a statistical classifier to identify moving patches.  Following a presentation of the methodology, results from selected case studies representing a diversity of scenes are provided.  Finally, conclusions and future work are presented.
+ 
+% The remainder of this paper is organized as following:
+% data preparation which generate different databases 
+% In method one, we use the basic concept of matching intensity histograms of related patches in all the available exposures.
+% for each pair, modify saturated or under-exposure pixels in each patch and shift the histograms in the same intensity range by cross correlation
+% In method two, HOG descriptor is calculated for the center of each patch.  Then the dimensionality of descriptor vectors are reduced by projecting the vector on the largest Eigenvectors using Singular Value Decomposition (SVD)
+% find the difference between histograms of the consistent patch in paired images and cluster patches with high difference values as suspected noise.
+% apply statistical classifier to identify ghost-patches and their related exposure
+% Finally a Conclusion and ideas for future work are presented
+% 
+\section{Background Study on Anti-Ghosting Algorithms}
+\label{sec2}
+
+Camera movement and object movements are the primary sources of ghost effects in HDR images. While several anti-ghosting algorithms have been proposed for the former \cite{5},\cite{10}, \cite{11}, this paper focuses on the latter.  De-ghosting algorithms for static scenes can be grouped into three categories, as described below.
+
+\subsection{Using Camera Response Function (CRF) and a Reference Image}
+\label{subsub1}
+
+ The camera response function (CRF) relates scene radiance to actual pixel "brightness" values. In practice, a complex formula coded from manufacturers themselves in order to compress a high dynamic range image into a low dynamic range photo.
+ 
+ There are many proposed methods using both a camera response function (CRF) and a reference image to detect the moving objects in the scene  \cite{9}, \cite{2},  \cite{20}, \cite{21}, \cite{23}\, \cite{24}, \cite{25}.  These methods first select a reference image and then average the radiance of consistent patches in all the available exposures. Information from the estimated CRF and the reference image are used to detect the regions without artifacts when combined with the reference image. The pixel is marked as valid if it is well approximated by the predicted value.  Otherwise, it is marked as invalid in an error map.  They are pixel level movement detection schemes, which needed to select an initial reference image. These methods are often not successful when moving objects are not in saturated or under exposed region due to large estimated errors for bright regions and small for dark region within two LDR images, and the predicted error increases along with the increase of exposure gaps.
+ In \cite{1} the moving objects are identified by Monotonous, Pixel error criterion, Color error criteria using a CRF.  An updating strategy is employed to recognize the difference between moving objects and background in LDR images. Image inpainting is the final step to mitigate the errors from a CRF and image alignment.
+   
+ An image fusion based method (IF) is introduced in \cite{liu2015dense} to directly obtain an everywhere well-exposed image by merging the complementary information of input LDR images. Then unnormalized dense scale-invariant feature transform (or SIFT) descriptor is first employed as the activity level measurement to extract local details from source images, and then normalized dense SIFT descriptor to remove ghosting artifacts when the captured scene is dynamic with moving objects. This method rely heavily on the HDR image obtained in advance. In addition, when the moving objects do not appear in a small percentage of source images at one location, the proposed method may not work well.
+ 
+ Detecting ghosting regions is introduced in \cite{sidibe2009ghost} based on an order relation between pixel values in consecutive images without the need of precomputing the camera response function. Result depends greatly on the selection of reference image too.
+ 
+ The main issue of using these methods for our task is the error-prone estimation of a CRF, which relies on high contrast between moving object and background. In other algorithms where a reference image is required, if that initial reference image is not properly selected, the quality of the final image will be compromised. Further, in this class of methods, the information is extracted from a single image at each pixel location, often resulting in salt and pepper effects and requiring more computation time.
+    
+  \subsection{Motion Estimation}
+  \label{subsub2}
+
+Motion estimation models detect a change in position of an object relative to its surroundings. 
+Examples  of the motion estimation approach are presented in \cite{7} and \cite{8}. First, the movement of an object across the image set  is defined.  Next, the  average pixel values are calculated according to this movement. An optical flow field between the different images is estimated and applied to accurately align scene features. \cite{8} select only one exposure per region to detect the motion. While selecting the middle exposure as the reference typically results in the best scene consistency, objects moving in or across regions that are over- or under-saturated in the reference frame can still be duplicated or deformed.
+
+Motion detection is applied only one exposure per region in \cite{8}. They showed that picking the middle exposure as the reference frame results scene consistency; however, objects moving in or across regions that are over- or under-saturated in the reference frame can still be duplicated or deformed. This approach is also highly sensitive to the quality of motion estimation as any mismatch can generate additional ghosting. 
+
+
+
+  
+ \subsection{Statistical and Mathematical Methods}
+ \label{subsub3}
+ 
+The  proposed statistical method in \cite{13} does not need explicit object detection or motion estimation. A non-parametric model for the static part of the scene (background) is used, followed by an iterative, pixel membership process to establish weight and to determine their contribution to the final image. A limitation to this approach is that the exposure sequence predominantly captures the background, so that in any local region in image space, the number of pixels that capture the background need to be significantly greater than the pixels that capture the object. This method is also computationally expensive, requiring multiple iterations for a large  set of images.
+
+\cite{3} contains two steps: image alignment for camera movement and anti-ghost detection. Their movement detection process does not require the CRF and is independent from the contrast between the background and moving objects.  The concept of entropy is used to create clusters of pixels as areas that are affected by movement in any of the LDR images. During the HDR generation, these movement clusters will be analyzed and used to remove the ghosting effects. For this approach, the moving object should be reasonably small and the area affected by the moving object is captured without saturation or under exposure in at least one LDR image. Another drawback is that its generation is computationally expensive and that it can fail to make a decision for object with very bright or vary dark irradiance values. This method can only cope with the scenes in which ghosts occur in regions with low dynamic range. The common denominator to these techniques is the replacement of entire regions with a single exposure such as regions that are detected as possible ghost regions in this manner are again replaced with values from single exposures. This solution fails when ghosting occurs in regions where the dynamic range is high.
+
+Second biggest singular values extracted over local spatiotemporal neighborhoods are used in \cite{srikanthasvd} for ghost region detection. However, the limitation of this method is the assumption that each LDR image to be only slightly dominated by ghosts.
+
+In other statistical methods which estimate the probability of a pixel belonging to a moving object, the generated scene is not guaranteed to be consistent because the weighting is done at a pixel level and, therefore, objects might be duplicated. Finally, it is not clear how it would perform when most of the scene changes, because of the underlying assumption that neighborhoods around pixels of the moving objects predominantly represent background. It is also noted that the statistical methods cannot completely remove ghost artifacts unless the probability of a pixel belonging to the background is zero or one otherwise some faint ghosts being still visible due to the uncertainty in setting threshold probability.
+
+
+\section{Methodology}
+\label{sec3}
+
+A general flowchart of the proposed methodologies is presented in Figure~\ref{fig:flowchart}. 
+\subsection{Image preparation}
+
+A pixel's intensity is represented by its grayscale value, which is a simple way to describe the scene's luminance. The grayscale value is obtained by converting the RGB color bands as indicated below:
+
+\begin{center}
+$ grayscale = 0.2989 \times R + 0.5870 \times G + 0.1140 \times B $
+\end{center}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\linewidth]{./images/image2}
+\caption{Flowchart of the proposed method}
+\label{fig:flowchart}
+\end{figure}
+
+Consider \textit{A} as a set containing \textit{N} images with different exposure time, we will have:
+\begin{center}
+$\mathbb{A} = \{A_{1}, \cdots , A_{N}\}$ \\ % series of images with different exposure values 
+\end{center}
+The first step is gridding all images by selecting a patch size ($k\times k$). Based on the patch size, each image ($A_i$) will have \textit{M} patches:
+
+\begin{center}
+$ A_{i}=\{A_{i}^{1}, \cdots, A_{i}^{M}\}$\\
+\end{center}
+
+The centers of the patches are defined as the image features so there are \textit{M} features to describe each image.\\ 
+
+\subsection{Feature Descriptor}
+Histograms of Oriented Gradients (HOG) are applied to describe characteristics of the patches. By definition, a HOG descriptor is a histogram of orientations of the image gradients within a patch\cite{15}. Calculating a HOG for each patch is a common way to describe image features which in this case to describe centers of patches in different exposures.
+
+An open source code \cite{16} is used to calculate the HOG descriptor for the center of each patch. To compose HOG, the cell histograms of each pixel within the cell cast a weighted vote, according to the gradient L2-norm, for an orientation-based histogram channel. In this code, the histogram channels are calculated over rectangular cells (i.e., R-HOG) by the computation of unsigned gradient. The length of HOG feature vector (d) depends on the size of area (pixels) to calculate gradient and the number of bins in the histogram. In this study, 9 rectangular cells (3$\times$3 blocks) and 9 bin histograms per cell are concatenated to make a 81-dimensional feature vector as $\phi^{j}_{81\times1}$ for each patch \textit{j}.
+
+"Equalized Grayscale" data was used for calculating the HOG. First, a histogram equalization \cite{15} is applied on each individual RGB band to produce an equalized RGB image that is subsequently converted to grayscale values.
+
+
+Next step is pairing images based on their exposure values. The exposure value of an image is defined as:
+\begin{center}
+$EV={\mathrm{log}}_{2}(\frac{{f}^{2}}{t})$
+\end{center}
+where \textit{f} is the relative aperture (f-number) and \textit{t} is the exposure time (“shutter speed”) in seconds. Images are paired with another image with a closer EV (Figure ~\ref{fig:pair}).   Image pairing starts from the high and low exposed images to the images with middle exposure values.  When there are an odd number of images in a set, the middle image is paired with the image with the closest EV.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth,keepaspectratio]{./images/image3}
+\caption{Pared images. Pairing images with the closest EVs. A dog appears as a sudden moving object in one of the exposures. }
+\label{fig:pair}
+\end{figure}
+
+%
+%
+%Because all images in the set will have the same dimensions and are gridded by the same patch size, each patch has a directly corresponding patch in each of the other images. So each patch \textit{j} contains information from other exposures:
+%%, there is a subset contains the same patch position in other images as:\\
+%\begin{center}
+%$ \mathbf{B_{j}} = \{\psi_{i}^{j} \} \hspace{1cm} \forall i=\{1, \cdots, N\}$ \\
+%\end{center}
+%
+
+%
+%The basic idea of creating this descriptor is that the histograms of pixel intensities for a particular patch will have approximately the same shape for a different exposure, but will be shifted.  For example, images with longer exposures will be shifted to the right and images with shorter exposures will be shifted to the left (Figure \ref{fig:image4}).  The resulting over and under exposed pixels change the shape of the intensity histogram, which renders decisions based on their similarity difficult. To solve this problem, we introduce a step to modify under and over exposed pixels.
+
+%As Figure \ref{fig:image4} shows, images with longer exposure times have some over exposed pixels and images with shorter exposure times contains more under exposed pixels. These over and under exposed pixels change the shape of the intensity histogram which make decision based on their similarity hard. To solve this problem, we introduce a step to modify under and over exposed pixels. 
+
+%
+%Then for each particular patch, an average of maximum intensities $\mu$ can be calculated as:
+%\begin{center}
+%$ \mu_{j} = \frac{\max \{\mathbf{B_{j}}\}}{N}$
+%\end{center}
+%The median and standard deviation of each pixel at coordinates x and y are calculated from the pixel values of that specific pixel in different exposures as:
+%\begin{center}
+%$ med_{j}(x,y)= median {\mathbf \{B_{j}(x,y)}\} $\\
+%$\sigma_{j}(x,y) = std {\mathbf \{B_{j}(x,y)}\}$
+%\end{center}
+%Next, define a probability that measures how likely a pixel is expected to have a different value in various exposures based on standard deviation and average of maximum values of the related patch.
+%\begin{center}
+%$P_{j}(x,y)=\frac{\sigma_{j}(x,y)}{\mu_{j}}$ 
+%\end{center}
+%
+%
+%By introducing $EV_{avg}$ as the average of all EVs, the modifications of pixel values are performed for the bright (EV $\leq $ EVavg) and dark (EV$>$EVavg) images as shown in Algorithm \ref{Alg1}. Applying this algorithm on the patches will result in approximately similar histograms for paired images; however, they still will be shifted from one another.
+%\begin{figure}[h]
+%\centering
+%\includegraphics[width=0.6\linewidth]{E:/Shepard/Final/images/image5}
+%\caption{The steps of creating Modified Histograms of Pixel Intensity as a patch descriptor}
+%\label{fig:image5}
+%\end{figure}
+%The histograms of the patches are converted to signals and a cross correlation algorithm is used to determine the shift required to optimally match the two histograms.
+%
+%Finally each patch with a different exposure is described by its corrected histogram of intensity. 
+
+
+
+For each patch (j) extract the HOG descriptors within all exposures and put them together as a matrix descriptor: 
+\begin{center}
+$\mathbf{\Phi^{j}} = \begin{bmatrix}
+  \phi_{1}^{j} & \cdots & \phi_{N}^{j}
+ \end{bmatrix}^{T}
+ $\\
+\end{center}
+ where N is the number of images with different exposure times, and $\phi_{i}^{j}$ indicate the HOG feature vector for the patch of interest \textit{j} in exposure \textit{i}. In other words, each location in the scene (patch \textit{j}) can be describe by a matrix, containing all \textit{d}-dimensional feature vectors of \textit{N} images with different exposure times as $\Phi_{N\times d}^{j}$.  
+ 
+ $\Phi$  suffers from high dimensionality because it has N samples described by \textit{d} dimensional feature vector where $N<<\textit{d}$.
+ 
+Dimensionality reduction is the process of finding a suitable lower dimensional space in which to represent the original data while still preserving information on all of the available variables. Singular value decomposition (SVD) enables one to find the principle components without explicitly calculating the covariance matrix. The SVD of $\Phi$ is given by: \cite{17}
+
+\begin{center}
+$ \Phi = U\varSigma V^{T} = \sum{u_{i}\sigma_{ii}v_{i}^{T}}$
+\end{center}
+where U is an $N \times N $matrix, D is a diagonal matrix with N rows and \textit{d} columns,
+V has dimensions $d \times d$.
+ 
+Dimensionality reduction from N to h dimensions can be performed using SVD by retaining the first h columns for U, V, and D. The columns of V give the basis vectors in rotated space, so V shows how each dimension can be represented as a linear combination of other dimensions. Hence, the transformed data (T) using SVD will be: 
+\begin{center}
+$T \approx \Phi V_{h} = U_{h}\varSigma_{h}$
+\end{center}
+The number of dimensions in the new coordinate system(\textit{h}) is identified by the number of eigenvectors selected. The concept of energy of the datasets are used to find the optimum number of new dimensions. The total energy is the sum of the squares of singular values as:
+$ E = \sum_{i=1}^{n} \sigma_{ii}^{2} $ and the retained energy  is $p = \frac{E_{h}}{E}$.
+The optimum number of new dimensions has at least 80\% retained energy. In this study, a reduction factor between two to five results in a value for \textit{p} between 80 \% to 90 \%.
+
+It is worthwhile to mention that the HOG descriptor was tested on different variables such as the output of modified intensity histogram, which are modified grayscale, and modified luminance, and Equalized Lab. However, these variables did not perform as well.  
+
+ It is worthwhile to mention that the Luminance band of the CIELab space was also tested as the intensity measure to generate HOG feature descriptor; however, the results were not as good as those obtained by grayscale.
+ 
+\subsection{Classification}
+For evaluation of the feature descriptors of different exposures for a patch ($j$), the difference measurement is calculated as follows:
+\begin{center}
+$ \psi_{u,v}^{j}=\sqrt{\frac{||\phi_{u}^{j} - \phi_{v}^{j}||^{2}}{d}} \qquad \{u,v\}\in N $
+\end{center}
+
+\noindent where $u$ and $v$ are different exposures. 
+
+Because of having $N$ number of LDR images with different exposures, the total number of $ N'= (\frac{N*(N-1)}{2})$ comparisons can be calculated. Calculating differences for all the patches $(M)$ leads to a cost matrix $(\mathbf{\Psi}_{[M \times N']})$ as following:
+
+%\begin{center}
+%$\Psi_{M \times N'} = \begin{Bmatrix}
+%\psi_{1}^{1} & \cdots & \psi_{1}^{N'}\\
+%\vdots & \vdots & \vdots\\
+%\psi_{M}^{1} & \cdots & \psi_{M}^{N'}\\
+%\end{Bmatrix}$
+%\end{center}
+
+\begin{center}
+	$\mathbf{\Psi} = [\Psi_1, \cdots, \Psi_M]^T \qquad \mathbb{R}^{M \times N'}$
+\end{center}
+
+Because of the sorting and pairing the LDR images, the differences between feature vectors of a paired exposures such as $i$ and $i'$ have a relative column $\Psi_{x} $ in cost matrix. So each row of the cost matrix represents the difference vectors of different exposures including paired and non-paired exposures as: 
+
+\begin{center}
+	$ \Psi_j={\Psi_X, \Psi_Y}$
+\end{center}
+
+\noindent where $X$ shows columns relative to the paired exposures, and $Y$ relative to non-paired exposures.
+
+Algorithm \ref{IDrec} shows the procedure to find the primary suspected sudden moving object patches. In this algorithm, $\Psi_X$ are checked to find the elements with bigger feature vector differences as primary suspected patches containing moving object. The $\gamma$ is a scalar that controls the boundary for primary suspected selection (suspecting boundary).  
+
+\begin{algorithm}[h]
+\caption{ Primary Suspected Patches Containing Sudden Moving Object}
+\label{IDrec} %your label for references later in your document
+\begin{algorithmic}
+\For {$j \leftarrow 1,M$}
+\For {$x \leftarrow 1,X$}
+\If {$ \Psi_{x} > median(\Psi_{X})+\gamma \sigma(\Psi_{X})$}
+\State $ S \gets S + j $
+\EndIf
+\EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+Algorithm \ref{alg3} is applied to refine the primary suspected moving object patches. In this step, at each row representing a primary suspected patch two vectors $\psi_{y}^{i}$ and $\psi_{y'}^{i'}$ are created which contain the differences between other exposure and suspected exposures $i$ and $i'$, respectively. 
+The suspected sudden moving object patch will remain as moving patch if its cost value $\Psi_{x}$ is more than the maximum value of normalized cost arrays of $\psi_{y}^{i}$ and $\psi_{y'}^{i'}$. 
+
+Also the ``label" shows the estimated exposure containing the sudden moving objects (Algorithm \ref{alg3}).
+
+Finally, to have a tighter domain for recognized patches as sudden moving object (ID), a k-nearest neighbor algorithm is applied to each patch. If a patch is labeled as motion and its neighborhood contains at least one suspected sudden patches, then we declare the patch as ``sudden" otherwise we change it to ``not motion".
+
+\begin{algorithm}[H]
+\caption{Refine the Primary Suspected Patches}
+\label{alg3}
+\begin{algorithmic}
+
+\ForAll {$ x \in S $}
+\State $ \psi_{y}^{i}= \psi_{y}^{i} \frac{\sigma\{\Psi_{y}\}}{|| \sigma\{\Psi_{y}\}||}$
+\State $\psi_{y}^{i'}= \psi_{y'}^{i'} \frac{\sigma\{\Psi_{y'}\}}{|| \sigma\{\Psi_{y'}\}||}$
+\If {$ \Psi_{x} > \max \{\psi_{y}^{i}, \psi_{y}^{i'} \}$ }
+\State $ ID(i) = x$
+\If {$\{\psi_{y}^{i} > \psi_{y'}^{i'} \}$}
+\State $ label \gets i $
+\Else 
+\State $ label \gets i'$
+\EndIf
+\EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\section{Results}
+\label{sec4}
+
+In order to illustrate the problem and evaluate the effectiveness of the proposed method,three indoor and four outdoor datasets were acquired and tested (Figure \ref{fig:image9}). Each dataset contains several LDR images with different exposure times. Generally, only one image contains a controlled sudden moving object as shown by cyan boxes in Figure \ref{fig:image9}.  The introduction of these sudden moving objects were tested at different exposures (high, medium, and low) in each of the case studies.
+These datasets provide an adequate range of testing scenarios for the algorithm due to the high resolution of the images, the multiple scenes captured (indoor and outdoor, natural and man-made scenes), different sizes and shapes of the sudden moving objects, and representation of each scene by a number of images.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth,keepaspectratio]{./images/image9}
+\caption{The generated indoor(a,b,c) and outdoor(d,e,f) scenes datasets. The sudden moving objects are shown by cyan boxes}
+\label{fig:image9}
+\end{figure}
+
+\subsection{Results using state-of-the-art techniques}
+
+In computer vision, when there are active, moving objects of interest and a relatively more static background, subtracting background and foreground is a useful technique for preprocessing image and video data. In \cite{26} an online robust subspace tracking algorithm that operates on highly subsampled data is introduced to subtract the background and foreground in a video. They model each scene as the sum of two components as the relatively static background and a dynamic foreground, then "Grassmannian Robust Adaptive Subspace Tracking Algorithm" (GRASTA) is applied to separate the two.
+
+We also attempted to solve the problem of recognizing the sudden moving object in a series of digital images with different exposure times by GRASTA considering the images from the scene as frames of a video. However, the results of using GRASTA on one indoor and outdoor scenes (Figure \ref{fig:image11}) show that GRASTA could not solve our problem. We believe GRASTA did not work with our datasets because:
+\begin{enumerate}
+	\item Our dataset contains relatively few images of the same scene (GRASTA is based on long video segments with lots (\textgreater 50) training images.  For HDR processing, typically a few images are obtained rather than a continuous video stream.
+	\item  GRASTA was designed for lower-resolution video feeds rather than high-resolution images.  Our datasets are very high resolution images compared to longer video feeds.
+	\item GRASTA requires the exposure and the luminance of the scene are fairly constant between frames. We believe this is what causes much of the noise observed in Figure \ref{fig:image11}. One of the key highlights of our approach is that it can handle these exposure variants.
+\end{enumerate}
+ 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth,keepaspectratio]{./images/image11}
+\caption{The results of GRASTA algorithm, a) the exposure with a sudden moving object b) estimated foreground by GRASTA c)estimated background by GRASTA d) the exposure with a car as sudden moving object in an outdoor scene e) estimated foreground by GRASTA f)estimated background by GRASTA}
+\label{fig:image11}
+\end{figure}
+
+\subsection{Validation Approach}
+By overlying a mesh grid on the image containing the sudden moving object, we were able to manually count the patches whose pixels were at least 50\% occupied by the sudden moving objects to serve as the ground truth results.  This reference grid was used to compute the method's accuracy and precision through confusion matrix.
+
+In definition, recall (Re) is the percentage of possible answers which were correct or a measure of completeness or quantity and precision (Pr) is the percentage of actual answers given which were correct as a measure of exactness or quality. Clearly both recall and precision are important to rank the systems but normally as recall increases, precision tends to decrease and vice versa. A combined measurement for the entire system that jointly assesses precision/recall trade off is Matthew’s Correlation Coefficient (MCC). MCC is generally regarded as a balanced measure which can be used even if the classes are of very different sizes. It returns a value between $-$1 and +1 where a coefficient of +1 represents a perfect prediction, 0 no better than random prediction and $-$1 indicates total disagreement between prediction and observation \cite{18}. Calculating true positive (TP), true negative(TN), false positive (FP), false negative (FN) from the confusion matrix leads to compute MCC with the following formula:
+
+\begin{center}
+$ MCC = \frac{TP \times TN - FP \times FN}{\sqrt{(TP+FP)(TP+FN)(TN+FP)(TN+FN)}}$
+\end{center}
+
+
+\subsection{Overall Results}
+The algorithm was applied on the acquired datasets with different combinations of exposures. The sensitivity of our approach to the selected patch size was tested by running the algorithm on different patch sizes such as:
+\begin{center}
+ $K = \{64 \times 64, 128 \times 128, 180 \times 180, 256 \times 256 \} $.\\
+\end{center}
+
+Figure \ref{fig:image10} shows the average MCC for all datasets and the relative error bars where the number of input images ranged from 3 to 7. To produce this plot, some subsets were selected randomly out of the original datasets and introduced to the algorithm. Note that for this analysis, patch size and exposure values were not optimized for the size of the sudden moving object and the lighting conditions present in the scene. Hence, the MCC values are lower than those in the case studies. 
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth,keepaspectratio]{./images/image10}
+\caption{Average MCC with standard error bars for all datasets with different number of images as subsamples}
+\label{fig:image10}
+\end{figure}
+
+For subsamples with the same number of input images from all datasets, the standard errors and averages of all MCCs are calculated and represented in the Figure \ref{fig:image10}.
+
+The following text present the results of the proposed approach on the interesting datasets in details.
+
+\subsection{Indoor scene - DOG as a sudden moving object}
+
+Example 1 tests the algorithm in a relatively simple indoor scene with a smaller illuminance range.  The sudden moving object (dog) was present in one of the bright images (low EV).  Figure \ref{fig:image6_1} shows the estimated sudden moving object (Red boxes) and ground truth patches (Cyan boxes) for four input images. The optimal results occur between three to six images.  The HOG descriptor has slightly better performance for this example. The highest MCC (0.8) happened with four images and patch sizes less than 256$\times$256 pixels.  
+% Table generated by Excel2LaTeX from sheet 'Sheet2'
+\begin{table}[htbp]
+  \centering
+  \caption{General information for the first set - Indoor scene}
+    \begin{tabular}{l|cccc}
+    \hline
+    Image Size(pixel) & Rows: 3400 & & ISO: 200  \\
+          & Columns: 2832 &  & F-Stop: f/4.5  \\
+                  \hline
+    Patch Size (pixel) & \multicolumn{1}{c}{64$\times$64} & \multicolumn{1}{c}{128$\times$128} & \multicolumn{1}{c}{180$\times$180} & \multicolumn{1}{c}{256$\times$256} \\
+        \hline
+    Number of Patches & \multicolumn{1}{c}{2332} & \multicolumn{1}{c}{572} & \multicolumn{1}{c}{270} & \multicolumn{1}{c}{143} \\
+    Number of Moving Object's Patches & \multicolumn{1}{c}{64} & \multicolumn{1}{c}{15} & \multicolumn{1}{c}{10} & \multicolumn{1}{c}{6} \\
+    \end{tabular}%
+  \label{tab:set1}%
+\end{table}%
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth,keepaspectratio]{./images/image6_2}
+\caption{MCC values for indoor-dog dataset. Different number of images vs different patch}
+\label{fig:image6_2}
+\end{figure}
+
+\begin{figure}[hp]
+\centering
+\includegraphics[height = 0.9\textheight]{./images/image6_1}
+\caption{LDR images with different EVs (A-J) of Set 1: (Indoor-Dog). Estimated sudden moving object (red boxes) by comparing four LDR images with different EVs in different patch size (K-N). The ground truth objects in each patch size are presented by cyan boxes.}
+\label{fig:image6_1}
+\end{figure}
+
+\subsection{Outdoor scene - Car as sudden moving object}
+Example 2 was acquired outdoor with a larger sudden moving object (car) introduced in one of the darker images (high EV). Similarity between the color of the sudden moving object and the background increases the error. Minor errors occurred because background noise resulting from the transparency of the glass windows on the car.
+
+\begin{table}[h]
+  \centering
+  \caption{General information for the second set - outdoor scene (Car)}
+    \begin{tabular}{l|cccc}
+    \hline
+    Image Size(pixel) & Rows: 2257 & & ISO: 200  \\
+          & Columns: 2133 &  & F-Stop: f/4.5  \\
+                  \hline
+    Patch Size (pixel) & \multicolumn{1}{c}{64$\times$64} & \multicolumn{1}{c}{128$\times$128} & \multicolumn{1}{c}{180$\times$180} & \multicolumn{1}{c}{256$\times$256} \\
+        \hline
+    Number of Patches & \multicolumn{1}{c}{1155} & \multicolumn{1}{c}{272} & \multicolumn{1}{c}{132} & \multicolumn{1}{c}{64} \\
+    Number of Moving Object's Patches & \multicolumn{1}{c}{68} & \multicolumn{1}{c}{22} & \multicolumn{1}{c}{11} & \multicolumn{1}{c}{5} \\
+
+    \end{tabular}%
+  \label{tab:set2}%
+\end{table}%
+
+ While the car represents a controlled sudden moving object, the input images also contained different cloud shapes in the sky, which were detected by our algorithm. Optimal results were obtained with four or six images in this example. 
+
+\begin{figure}[hp]
+\centering
+\includegraphics[width=\linewidth,keepaspectratio]{./images/image7_1}
+\caption{LDR images with different EVs (A-G) of Set 2: (outdoor-Car). Estimated sudden moving object (red boxes) by comparing four images with different EVs in different window size (H-K)}
+\label{fig:image7_1}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth,keepaspectratio]{./images/image7_2}
+\caption{MCC values for outdoor-Car set, different number of images vs different patch size for HOG and modified histograms descriptor}
+\label{fig:image7_2}
+\end{figure}
+
+\subsection{Outdoor scene - Person as a sudden moving object}
+
+The third example was acquired in a very complex outdoor scene with various shadow and vegetation effects.  The introduced sudden moving object was a person with a similar shirt color as the background. Because he was positioned far from the camera, he is a small object in the image. \\
+
+\begin{table}[h]
+  \centering
+  \caption{General information for the third set - outdoor scene (Person)}
+    \begin{tabular}{l|cccc}
+    \hline
+    Image Size(pixel) & Rows: 4256 & & ISO: 200  \\
+          & Columns: 2832 &  & F-Stop: f/4.5  \\
+                  \hline
+    Patch Size (pixel) & \multicolumn{1}{c}{64$\times$64} & \multicolumn{1}{c}{128$\times$128} & \multicolumn{1}{c}{180$\times$180} & \multicolumn{1}{c}{256$\times$256} \\
+        \hline
+    Number of Patches & \multicolumn{1}{c}{2904} & \multicolumn{1}{c}{726} & \multicolumn{1}{c}{345} & \multicolumn{1}{c}{176} \\
+    Number of Moving Object's Patches & \multicolumn{1}{c}{10} & \multicolumn{1}{c}{3} & \multicolumn{1}{c}{2} & \multicolumn{1}{c}{1} \\
+    \end{tabular}%
+  \label{tab:set3}%
+\end{table}%
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth,keepaspectratio]{./images/image8}
+\caption{LDR images with different EVs (A-F) of Set 3: (outdoor-People). Estimated sudden moving object (red boxes) by comparing six images with different EVs in different window size (G-J)}
+\label{fig:image8_1}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth,keepaspectratio]{./images/image8_2}
+\caption{MCC values for outdoor-people set using just HOG descriptor, different patch sizes and different number of images}
+\label{fig:image8_2}
+\end{figure}
+
+As mentioned previously, the smaller patch size increase sensitivity of the method. In this example, the smallest patch size (64 $\times$64) detects subtle movements of shadows on the ground as well as leaves that have shifted from the wind.
+
+
+
+\section{Conclusions}
+\label{sec5}
+This study introduces a novel approach for recognizing sudden moving objects in an image set of a scene captured with different EVs. Unlike the common approaches that are dealing with moving objects in the sense of small continuous movement, this paper deals with an object that appears completely and disappears within a scene, which is much more challenging.  The method is based on subdividing the images into patches and identifying the patches as either sudden moving object or background. Both HOG and modified intensity histograms are used as descriptors. 
+
+Because the comparison between descriptors is done by pairing images by their closest EVs, the method generally works better for an even number of images. A sensitivity analysis showed the algorithm performed best with four or six images. 
+
+Unlike previous methods, this approach does not rely on a CRF or a complex motion detector. As shown by the examples, there are no limitations on the area or the exposure where the sudden moving object occurred.
+
+The performance of the method is highly sensitive to the selected patch size relative to the size of the objects of interest. On one hand, when the patch size is too large, the entire sudden moving object will fall into a single patch and only occupy a portion of the patch. On the other hand when patch size is too small, the system becomes overly sensitive to sensor and processing noise. However, it is relatively simple for the user to decide an appropriate patch size and the approach performs well if the sudden moving object fits within the regular patches.
+
+For future work, one could dynamically determine the optimal patch size for a given image based on the sudden moving objects present in the scene rather than manual determination.  Additional research can also address strategies for removal of the object (e.g., entire image or patches) when fusing LDR images with detected moving objects during the HDR process to generate a consistent, blended image.
+
+\section*{Acknowledgments}
+
+This material is based upon work supported by the National Science Foundation under Grant No. 1351487.
+
+\bibliographystyle{elsarticle-num}
+% \bibliographystyle{elsarticle-harv}
+% \bibliographystyle{elsarticle-num-names}
+% \bibliographystyle{model1a-num-names}
+% \bibliographystyle{model1b-num-names}
+% \bibliographystyle{model1c-num-names}
+% \bibliographystyle{model1-num-names}
+% \bibliographystyle{model2-names}
+% \bibliographystyle{model3a-num-names}
+% \bibliographystyle{model3-num-names}
+% \bibliographystyle{model4-names}
+% \bibliographystyle{model5-names}
+% \bibliographystyle{model6-num-names}
+
+\bibliography{reference0}
+
+
+\end{document}
+
+%%
+%% End of file `elsarticle-template-num.tex'.

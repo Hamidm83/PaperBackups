@@ -1,0 +1,712 @@
+%% 
+%% Copyright 2007, 2008, 2009 Elsevier Ltd
+%% 
+%% This file is part of the 'Elsarticle Bundle'.
+%% ---------------------------------------------
+%% 
+%% It may be distributed under the conditions of the LaTeX Project Public
+%% License, either version 1.2 of this license or (at your option) any
+%% later version.  The latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.2 or later is part of all distributions of LaTeX
+%% version 1999/12/01 or later.
+%% 
+%% The list of all files belonging to the 'Elsarticle Bundle' is
+%% given in the file `manifest.txt'.
+%% 
+%% Template article for Elsevier's document class `elsarticle'
+%% with harvard style bibliographic references
+%% SP 2008/03/01
+
+%%\documentclass[preprint,12pt,authoryear]{elsarticle}
+
+%% Use the option review to obtain double line spacing
+%% \documentclass[authoryear,preprint,review,12pt]{elsarticle}
+
+%% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
+%% for a journal layout:
+%% \documentclass[final,1p,times,authoryear]{elsarticle}
+%% \documentclass[final,1p,times,twocolumn,authoryear]{elsarticle}
+%% \documentclass[final,3p,times,authoryear]{elsarticle}
+\documentclass[final,3p,times,twocolumn,authoryear]{elsarticle}
+%% \documentclass[final,5p,times,authoryear]{elsarticle}
+%% \documentclass[final,5p,times,twocolumn,authoryear]{elsarticle}
+
+
+%% For including figures, graphicx.sty has been loaded in
+%% elsarticle.cls. If you prefer to use the old commands
+%% please give \usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{url}
+\usepackage{amssymb}
+\usepackage{multirow}
+
+\usepackage[all]{nowidow}
+
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+%% \usepackage{amsthm}
+
+%% The lineno packages adds line numbers. Start line numbering with
+%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
+%% for the whole article with 
+ \usepackage{lineno}
+
+\journal{ISPRS Journal of Photogrammetry and Remote Sensing}
+
+\begin{document}
+
+\begin{frontmatter}
+
+%% Title, authors and addresses
+
+%% use the tnoteref command within \title for footnotes;
+%% use the tnotetext command for theassociated footnote;
+%% use the fnref command within \author or \address for footnotes;
+%% use the fntext command for theassociated footnote;
+%% use the corref command within \author for corresponding author footnotes;
+%% use the cortext command for theassociated footnote;
+%% use the ead command for the email address,
+%% and the form \ead[url] for the home page:
+%% \title{Title\tnoteref{label1}}
+%% \tnotetext[label1]{}
+%% \author{Name\corref{cor1}\fnref{label2}}
+%% \ead{email address}
+%% \ead[url]{home page}
+%% \fntext[label2]{}
+%% \cortext[cor1]{}
+%% \address{Address\fnref{label3}}
+%% \fntext[label3]{}
+
+\title{ Efficient point cloud segmentation utilizing computer vision algorithms}
+
+%% use optional labels to link authors explicitly to addresses:
+%% \author[label1,label2]{}
+%% \address[label1]{}
+%% \address[label2]{}
+
+\author[label1]{Hamid Mahmoudabadi}
+\author[label1]{Michael J. Olsen}
+\author[label1]{Sinisa Todorovic}
+\address[label1]{Oregon State University, Corvallis, OR, USA}
+
+\begin{abstract}
+%% Text of abstract
+New technologies such as lidar enable the rapid collection of massive datasets to model a 3D scene as a point cloud. However, while hardware technology continues to advance acquisition rates, processing 3D point clouds into informative models remains complex and time consuming. A common approach to increase processing efficiently is to segment the point cloud into smaller sections, typically based on geometric characteristics (e.g., planar features). This paper proposes a novel approach for point cloud segmentation using computer vision algorithms to analyze panoramic representations of individual laser scans. These panoramas can be quickly created using an inherent neighborhood structure that is established during the scanning process, which scans at fixed angular increments in a cylindrical or spherical coordinate system. In the proposed approach, a selected image segmentation algorithm is applied on several input layers exploiting this angular structure including laser intensity, range, normal vectors, and color information. These segments are then mapped back to the 3D point cloud so that modeling can be completed more efficiently. This approach does not depend on pre-defined mathematical models and consequently setting parameters for them. Unlike common geometrical point cloud segmentation methods, the proposed method employs the colorimetric data as another source of information. The proposed algorithm is demonstrated on several scans encompassing variety of scenes and objects. Results show a very high perceptual level of segmentation and thereby the feasibility of the proposed algorithm. Results also showed the proposed method is more efficient compared to the state of art method (RANSAC).  
+
+\end{abstract}
+
+\begin{keyword}
+%% keywords here, in the form: keyword \sep keyword
+Terrestrial laser scanning \sep Point Cloud \sep Segmentation High Dynamic Range imaging \sep HDR \sep Computer Vision 
+%% PACS codes here, in the form: \PACS code \sep code
+
+%% MSC codes here, in the form: \MSC code \sep code
+%% or \MSC[2008] code \sep code (2000 is the default)
+
+\end{keyword}
+ 
+\end{frontmatter}
+
+\linenumbers
+
+%% main text
+%%\section{}
+%%\label{}
+
+\section{Introduction}
+Lidar (Light Detection and Ranging) technology utilizes near-infrared lasers to densely sample objects within view of the scanner in 3D \cite{vosselman2010}, resulting in a point cloud with X,Y, Z coordinates for each sample point. Scanners also encode the strength of the backscatter called laser intensity (i.e., signal degradation as an intensity measurement).   
+Although there are several factors that affect the magnitude of the laser intensity value, this value can characterize reflectance of the target surface \cite{kaasalainen2011,kashani2015}. In addition, most scanners are equipped with digital cameras in order to provide realistic RGB (red, green, blue) color values for each scan point.  
+
+It is well accepted that lidar is a powerful tool to produce high resolution, accurate, geospatial information for 3D modeling of an environment. As a result, 3D laser scanning is used in a wide variety of applications including surveying and mapping, industrial plant management, transportation asset management, facilities management, building information modeling, crime scene investigations, coastal erosion, rockfalls, landslides, and seismic displacements, cultural heritage and geologic instigations.
+
+The 3D point clouds and 2D RGB images from a single scan can exceed millions of elemental units; however, these data do not contain semantic meaning (i.e., a point or pixel is not tagged with an object/surface identifier of what it represents). In many applications, a relatively small portion of the data are actually needed for mapping, modeling, and object extraction. A fundamental step in simplifying data processing and removing redundant information is segmentation \cite{vosselman2010}.  In more advanced processes, segmented points can then be classified (e.g., provided with semantic meaning) based on characteristics. 
+
+As will be briefly described in the next section, common methods for 3D laser point cloud segmentation require considerable manual labor, using mostly geometric-based approaches with extensive complexity and limited accuracy. Further, many of these procedures tend to fail or require significant manual intervention when faced with real world datasets containing many different kinds of objects and noise.  Uneven distribution of points in 3D space and varying scale within the data also present challenges. 
+
+A key solution for this problem is utilizing the point cloud structure generated in the scanning process, producing a panorama, which is a 2D projection of the cylindrical or spherical coordinate system used by the scanner \cite{olsen2010}. Converting 3D lidar point clouds into these 2D panoramic image maps (PIMPs) enables one to apply available image processing and computer vision algorithms developed for 2D images. There are several algorithms successfully implemented for operating on 2D images e.g., \cite{szeliski2010} that have yet to be exploited for use with lidar data.  Upon segmentation and analysis, the processed PIMPs then can be mapped back into 3D space, resulting in a segmented point cloud. 
+
+Measured laser intensity values are a good descriptor for the characteristics of the scanned objects' reflectance linked with spatial resolution of the laser scanners. These values are mainly affected by intrinsic and extrinsic factors of the laser scanners \cite{kashani2015}.  To enhance the quality of the laser intensity PIMP, an empirical correction function is derived and applied on the raw laser intensity values. 
+
+To employ the colorimetric information, the proposed approach is applied on both PIMPs of the lidar point clouds and photographic imagery. Digital images that are captured usually along with lidar typically contain three layers of information for each point as red, green and blue bands. Although these colorimetric data are generally used for visualization purposes, they have not been substantially used for point cloud segmentation purposes. Certainly, having high quality images that preserve important details can be very helpful to the process. However, a key challenge in digital image acquisition is that the illumination of most scenes vary substantially, resulting in loss of information within underexposed and overexposed regions. The High Dynamic Range (HDR) photography technique is implemented as a solution to cover the full range of light present in the scene and to have detailed digital images in dark and bright areas \cite{reinhard2010,TMO}. 
+
+The primary objectives of this research can be categorized as follows:
+\begin{itemize}
+	\item	Develop an approach for intuitive, comprehensive point cloud segmentation in dense, large, 3D terrestrial lidar datasets by applying image processing and computer vision algorithms. Such a method can reduce computation time, improve the perceptual performance of segmentation, and minimize user intervention, 
+	\item	Implement HDR photography to improve colorimetric data of digital images and consequently segmentation results; and,
+	\item	Improve the performance of the segmentation by utilizing an empirical correction formula to correct laser intensity values for range and angle of incidence.
+\end{itemize}
+
+The paper is organized as follows: Section \ref{seg:lit} provides a brief literature review and background. Section \ref{seg:method} describes the methodology. Results are provided and discussed in Section \ref{seg:result}. Conclusions and future work are provided in Sections \ref{seg:con} and \ref{seg:fut}, respectively. 
+
+
+
+\section{Literature review}
+\label{seg:lit}
+
+This section provides an overview of existing work on segmentation and classification of lidar point clouds. It is organized with respect to common types of approaches, which have been classified into the following categories: geometry, laser intensity values, colorimetric data, and structure.
+
+\subsection{Geometry}
+Current algorithms in literature chiefly focus on segmenting laser scanner point clouds (typically from airborne platforms) into planar regions or ground points. These are logically the most common due to the easy determination, modeling, and frequency of planar surfaces in urban environments. However, because these approaches operate in 3D space, they are computationally costly and often require the use of finely-tuned parameters, which can be laborious when applied to broader and larger datasets. These procedures typically operate using the fundamental algorithms of Random Sampling and Consensus (RANSAC), Hough transforms, surface or region growing (based on proximity, slope, curvature, and surface normal) from a seed location \cite{rabbani2006}, finding discontinuities \cite{wang2009} in the point cloud, a k-means clustering approach \cite{chehata2008}, voxelation \cite{douillard2011} or using fuzzy parameters in relative height differentials \cite{biosca2008}. 
+The Random Sampling and Consensus algorithm (RANSAC) is an iterative method used to estimate parameters of mathematical models from a set of data containing outliers. The RANSAC algorithm randomly selects minimal sets to find the parameters of a candidate model. A minimal set is the smallest number of data samples required to uniquely define a model. Then, the model is evaluated on the whole dataset. The process is performed iteratively until the best parameters of the selected model are found \cite{vosselman2010}.
+
+In \cite{pu2006} a simple planar surface growing algorithm is used to extract building features (walls, windows, and doors) from terrestrial laser scanned data using properties such as size, position, direction, and topology for each planar segment. \cite{moussa2010} considers the size of the patch to distinguish between buildings and vegetation. \cite{lin2006} first compute the normal vector for each point by tensor-voting, followed by classification through a cluster density method based on similar normal vector directions. There are also a variety of geometric methods for ground-filtering and vegetation removal (see \cite{vosselman2010} for an overview of approaches). Although primarily developed for robotics, the Point Cloud Library (PCL) \cite{pcl} is a recent, powerful, open source resource of code (C++) for segmentation through extraction of geometric primitives (planes, cylinders) as well as raw RGB color, if available. 
+
+Unfortunately, many of these algorithms have been developed for small datasets (a few million points) and have difficulty scaling up to extract objects of interest in larger datasets (e.g., many millions of 3D points).
+
+\subsection{Colorimetric data}
+The recent availability of high-resolution digital cameras and laser scanners has given rise to extremely rich colored geometric datasets. Many techniques to combine the laser scanning dataset with the digital images are presented mostly in heritage documents \cite{douillard2011,caroti2006,kadobayashi2004}. Unfortunately, even a colored point cloud is far from informative on its own. To further utilize the sample information, we must first segment and categorize the points in the cloud into our objects of interest. In \cite{strom2010}, segment unions are proposed as an extension of graph-theoretic segmentation followed by a dynamic segment union criterion, based on both color and surface normals. \cite{triebel2005} use a hierarchical variant of the popular expectation maximization algorithm to determine an optimal set of planes that fit the data. 
+
+\cite{yu2011} algorithm has three steps. In the first step, ground detection by establishing upper thresholds for both absolute offset from local minima and absolute differential change for enforcing smoothness. In the second step, the mean shift segmentation algorithm is used to divide and conquer the remaining objects. Finally, they use a manifold embedded mode seeking method similar to mean shift to segment the cloud into objects. \cite{sok2010} also used a mean shift smoothing algorithm to segment the image into clusters. They then define the corresponding point cloud data to each cluster and a PCA is applied to each cluster to categorize them as “planar”, “linear”, or “random”. \cite{cheng2011} combine multi-view aerial imagery and lidar data to reconstruct 3D buildings.  
+
+The presented approach in \cite{superpixel} combines lidar and digital images to generate a 7-dimensional hyperspace (X, Y, Z, Red, Green, Blue, intensity). First, a superpixel algorithm (Simple Linear Iterative Clustering) is used to cluster the image pixels based on color and their position, followed by determining the normal vector of each projected superpixel. A rigid mathematical classifier and a multi-class support vector machine are performed for categorization of superpixels and object extraction based on the generated normal vectors. Finally, the misclassification of each superpixel is refined by using k-nearest neighbor algorithm on its immediate neighbors.
+
+
+\subsection{Laser intensity}
+In \cite{niemeyer2012} a Conditional Random Field (CRF) algorithm is applied to classify five object classes (building, low vegetation, tree, natural ground, and asphalt) using geometrical features and intensity values of airborne lidar data. In a CRF, each node as well as each edge is associated to a feature vector. Finally, a conversion from 3D point cloud to 2D objects is performed for each class of interest. 
+
+
+\subsection{Structure}
+
+The angular structure of point cloud data in terrestrial laser scans can be taken advantage of for point cloud segmentation. In \cite{zeibak2009,barnea2012,barnea2013,barnea2008,olsen2010}, projecting the 3D data to a 2D panoramic grids shows significant potential to simplify the segmentation process. \cite{zeibak2009} uses the panorama to identify objects appearing in different shapes, sizes, range and locations within the scene and relatively to the scanner. Generally, point clouds are segmented based on smoothed surface normal and then points are classified as objects using the derived direction and applying the dot product based analysis. In \cite{barnea2013} three datasets were created using the intensity value in the range panorama, the surface normals, and true color channels. The mean-shift algorithm is used as the segmentation scheme for each cue individually. For the normal based cue the ground and the facades appear as complete segments and for the color channel some of the facades and vehicles were extracted partially. Finally, an integration approach is applied across all data sets. Barnea and Filin \cite{barnea2007,barnea2008,barnea2012,barnea2013} focused this effort to extract trees in the point cloud. For each of the channels (range, intensity, Luv and HSV color), they determined that the range and intensity values provided the highest descriptive power for tree points.
+
+\section{Methodology}
+\label{seg:method}
+
+The proposed approach has four main steps (Figure \ref{fig:seg_flowchart}):  preparation, segmentation, integration, and merging. The following sections describe each step.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{./figures/seg/seg_flowchart}
+	\caption{Flowchart highlighting key steps of implementing the proposed segmentation approach.}
+	\label{fig:seg_flowchart}
+\end{figure}
+
+
+\subsection{Convert scanned data to PIMPs (Panoramic Image Maps)}
+
+Terrestrial laser scanners operate on a spherical or cylindrical structured format with measurements separated by a fixed angular offset as opposed to a final distance sampling resolution on a target surface. For each measured point, its distance to the laser scanner, namely the Range ($\rho$), the horizontal ($\phi$) and the vertical ($\theta$) angles are recorded (Figure \ref{fig:seg-TLS}).
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{./figures/seg/seg-TLS}
+	\caption{A) Data acquisition using laser scanner in 3D scene B) panorama view of laser intensity.}
+	\label{fig:seg-TLS}
+\end{figure}
+
+Although laser scanners natively sample in angular increments, the output is often provided as xyz coordinates. The conversion between the Cartesian and spherical coordinate system is obtained by the following equation: 
+
+\begin{equation}
+\left( \begin{matrix}
+x  \\
+y  \\
+z  \\
+\end{matrix} \right)=\rho \times \left( \begin{matrix}
+cos\varphi cos\theta   \\
+sin\varphi cos\theta   \\
+sin\theta   \\
+\end{matrix} \right)
+\end{equation}
+
+To facilitate the processing and establish a gridded neighborhood, the 3D lidar point cloud is treated as a 2D panoramic image map (PIMP) representation whose axes are the horizontal ($\phi$) and the vertical ($\theta$) scanning angles, and the measurements are the intensity values. Because of the fixed angular spacing (defined by system specifications), a lossless angular structured file can be set. The Leica PTX format, which is an ASCII based format for point cloud data retains the structure, colorimetric and laser intensity values from the original scan plus additional registration information \cite{cyclone}. The ASTM E57 format also preserves the angular structured format of the scans. E57 is not only capable of storing point cloud data from laser scanners and other 3D imaging systems, but it also stores associated 2D imagery and core meta-data \cite{huber2011}. Other formats such as ASPRS LAS do not directly preserve this data structure.
+
+The process of extracting the PIMPs of the interest parameter from the scan data simply requires exploiting the angular structured format of the scan and storing the values in 2D array files.  An adapted version of the code developed by \cite{olsen2010} reads information from  a  structured  lidar  file  (e.g.,  PTX  format)  and  to  export  all  input  channels  into PIMPs. Pixels representing pulses with no-return areas in the scene (e.g., the sky) are set as transparent so they are not included in the analysis. PIMPs values are typically 0-255, but multiple channels can be used (e.g., RGB) to store information with higher precision. The following PIMPs are extracted from acquired scans and are shown in Figure \ref{fig:fig3_inputbitmaps}:\\
+
+\begin{figure*}[h]
+	\centering
+	\includegraphics[width=\textwidth]{./figures/seg/fig3_PIMPs}
+	\caption{Generated PIMPs a) RGB from single shot digital images B) range C) laser intensity in grayscale D) laser intensity spread in RGB bands E) vertical normal F) horizontal normal G) normal vector spread in RGB bands H) incidence angle.}
+	\label{fig:fig3_inputbitmaps}
+\end{figure*}
+
+
+\noindent \textbf{RGB color}\\
+\indent Digital cameras are used to color the laser point cloud either as internal or external devices. The integration of camera and laser scanner is based on different coordinate systems and their relative transformation matrices. The camera is calibrated with the laser scanner so that the offset (translation and rotation) between the camera origin and scanner origin can be accounted for.  Then with parameters such as focal length, etc. the image distortion can be corrected and the image can be mapped to the point cloud \cite{riscan,cyclone}. The transformation between the camera and laser scanner is described in detail in \cite{barnea2008,barnea2012}. The RGB values are assigned to the 3D points using this transformation matrix.  These colorimetric values are computed directly by mapping the images to the laser scan point cloud and can be performed with minimal effort in most manufacturer software.\\
+
+\noindent \textbf{Laser intensity}\\
+\indent Almost all laser scanners record the strength of returned laser signal as laser intensity (L) for each point, which can be mapped in the PIMP. While the approach to map the intensity values in \cite{olsen2010,barnea2007,barnea2008,barnea2012,barnea2013} is to scale the values to the range of [0 255] to generate a grayscale image (Figure \ref{fig:fig3_inputbitmaps} (C)), we spread the laser intensity values across three bands using statistical parameters such as the average ($\mu_L$) and standard deviation ($\sigma_L$) (Figure \ref{fig:fig3_inputbitmaps} (D)). The laser intensity values are assigned to RGB bands based on the following rules:
+
+\begin{algorithmic}
+	\If{$L < (\mu_L - \sigma_L)$}
+	\State $L_{RGB} \gets \lbrace 0,0,\dfrac{L-L_{min}}{\mu_L - \sigma_L-L_{min}} \rbrace$
+	\ElsIf{$(\mu_L - \sigma_L) \leq L \leq (\mu_L + \sigma_L)$}
+	\State $L_{RGB} \gets \lbrace 0,\dfrac{L-\mu_L + \sigma_L}{2 \times \sigma_L},0\rbrace$
+	\Else 
+	\State $L_{RGB} \gets \lbrace \dfrac{L-\mu_L + \sigma_L}{2 \times \sigma_L},0,0 \rbrace $
+	\EndIf
+\end{algorithmic}
+
+\noindent \textbf{Range}\\
+\indent Ironically, although the range is one of the basic measurements of the scanner and determined based on the time-of flight, most output files from the scanner do not contain range values. Fortunately, the range values can easily re-calculated using the Euclidian distance from the scanner (Origin 0,0,0) to the point coordinate values (X, Y, Z) as:
+\begin{equation}
+\rho = \sqrt{(X^2+Y^2+Z^2)}
+\end{equation}
+\noindent Figure \ref{fig:fig3_inputbitmaps} (B) shows the range PIMP as 8 bit grayscale image.\\ 
+
+\noindent \textbf{Normal Vectors}\\
+\indent The normal vector at each pixel is defined as a line or vector that is perpendicular to the given pixel based on a surface formed by its neighboring pixels. The normal vector of the surface from which the point was acquired can be computed by using neighboring points found using the scan angular structure (Figure \ref{fig:seg-nrmcal}). 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figures/seg/seg-nrmcal}
+	\caption{Schematic view of normal vector calculation methodology using gradient vectors ($\bigtriangleup ba, \bigtriangleup ca, \bigtriangleup da$), incoming laser, incident angle ($\beta$), and cross products (green vectors) for pixels with lidar data (not black pixels).}
+	\label{fig:seg-nrmcal}
+\end{figure}
+
+
+As shown in Figure \ref{fig:seg-nrmcal}, to calculate a normal vector at a pixel with a laser intensity value, there must be at least two immediate neighbor points with laser intensity values (i.e., not empty pixels where a lidar return was not obtained). Then, the gradient  between the current pixel and its neighbors are calculated ($\bigtriangleup ba, \bigtriangleup ca, \bigtriangleup da$). Finally, the normal vector for the current pixel is computed as the average of all cross products for each gradient pair. 
+
+\cite{barnea2012,barnea2013} represented normal vectors by mapping each component of the normal vector ($N_x, N_y, and N_z$) from a value range  of -1 to 1 to a value range of 0-255 in the R,G,B channels, respectively (Figure \ref{fig:fig3_inputbitmaps} (G)). A limitation of assigning each component of the normal vector with an individual color band is that objects with multiple sides facing different directions are colored differently and divided into several parts. To reconcile this information, additional PIMPs were created to represent the vertical ($N_z$) and horizontal ($N_h$) component as: 
+\begin{equation}
+{{N}_{h}}=\sqrt{N_{x}^{2}+N_{y}^{2}}
+\end{equation}
+
+\noindent \textbf{Angle of incidence}\\
+\indent The angle of incidence can be defined as the angle between incoming laser pulse and the normal vector at each sampled point. The incoming laser pulse ($\overrightarrow{\rho}$), can be represented as a vector (Figure \ref{fig:seg-nrmcal}) whose components are the coordinates of the points in the scanner coordinate system (x,y,z) since the scanner origin is at 0,0,0. Using this vector ($\overrightarrow{\rho}$) and the normal vector ($\overrightarrow{N}$) of the surface, it is possible to calculate the angle of incidence ($\beta$) as follows: 
+\begin{equation}
+Cos(\beta )=\frac{\overrightarrow{\rho}.\overrightarrow{N}}{||\rho||*||N||}
+\end{equation}
+
+For the surfaces that are perpendicular to the direction of the scanning laser ray, the angle of incidence is close to zero and for surfaces whose normal vector is perpendicular to the incoming laser pulse (e.g., parallel surfaces), the angle of incidence is larger, up to 90 degrees. Because $cos(\beta)$  is always in the range of [0 1], the grayscale image can be generated using $cos(\beta)$ as representative of the incident angle (Figure \ref{fig:fig3_inputbitmaps} (H)). 
+
+\subsection{Data improvement}
+
+\noindent \textbf{High Dynamic Range images}
+
+While imagery can be easily mapped to the point cloud, variable lighting conditions create several problems that often result in color information loss or degradation in the photographs. First, the single-exposure digital images contain underexposed and overexposed regions without colorimetric information. Second, the single exposure photographs more often lead to inconsistencies between adjacent images due to the illuminance variety in the scene.  
+Digital images with improved detail in dark and bright areas can be generated using the High Dynamic Range (HDR) photography technique \cite{reinhard2010}. In the HDR method, a sequence of photographs from the same viewpoint with different exposures is combined to improve coverage of the wide range of luminance levels found in natural and artificial scenes. 
+
+Because the pixel values in raw HDR images are above the dynamic range of an ordinary display device, a tone mapping operator is used to shrink the color values in the same range as other panoramas and possibly to display. The tone mapping operator selected for this study was a recently developed method \cite{TMO} which proved to be a general purpose operator that works well on a wide variety of scene types and under a wide variety of conditions.  This technique utilizes geostatistical variography to describe spatial dependencies between luminance values. Then the parameters of the variogram model produce optimal luminance across the image while still preserving local details in the bright and dark regions of the image. Although tone mapping the HDR is not necessarily for display, tone mapped HDR can make the segmentation process easier.
+
+
+\begin{figure*}
+	\centering
+	\includegraphics[width=\textwidth]{./figures/seg/fig5-AUvsHDR}
+	\caption{Created PIMPs from single shot images in automatic mode (A, C, E, G) and their corresponding HDR (B,D,F,H). Inconsistencies between adjacent images and loss of detailed information in regions with extreme lighting in single shot images are obvious.}
+	\label{fig:fig5-AUvsHDR}
+\end{figure*}
+
+\noindent \textbf{Laser Intensity correction}
+
+While numerous studies for airborne laser scanning (ALS) intensity correction have been completed recently \cite{ding2013,briese2012,vain2009}, relatively little research has been conduced for  terrestrial laser scanning (TLS) intensity correction. \cite{kaasalainen2009,kaasalainen2011,pfeifer2008}, and \cite{kashani2015} showed the intensity of the return signal received by a lidar detector is mainly affected by instrument factors, the target scattering features, and the acquisition geometry of the instrument relative to the surface. Range and angle of incidence tend to have the largest influence on relative intensity values when compared with other factors.  
+
+Given that both the range and incidence angle are easily calculated for each scan point, it is possible to derive an empirical correction function for laser intensity values. A simple, semi-empirical function was developed to correct the observed laser intensity values for range($\rho$) and incidence angle ($\beta$), as follows:
+\begin{equation}
+L_c=\frac{log(\frac{L \times \rho}{cos(\beta )+1})}{log(\frac{L}{cos(\beta )+1})+L}
+\end{equation}
+
+\noindent where \textit{L} is the recorded laser intensity and $L_c$ is the corrected laser intensity. This experimental correction corrects for the acquisition geometry reduces the variability of the laser intensities for a specific object remains consistent across different range and incidence values, enabling it to represent reflectance characteristics of the material rather than signal degradation from scanning geometry.
+
+The behavior of the correction formula was tested on some selected materials available in scan scenes. Figure \ref{fig:Lcorrection} shows the performance of the corrected formula on extracted points from common materials (cement, grass, building, and cars) with respect to $\rho$ and $\beta$. 
+The laser intensity values degrade with increasing range and incidence angle. Applying the proposed formula can correct for these degradation such that intensity values are more representative of the surface material. This is evidenced by the fact that the standard deviations are significantly reduced when compared with the uncorrected intensity values for each material (Table \ref{tab:Lcor}).   
+
+\begin{figure*}[t]
+	\centering
+	\includegraphics[width=\textwidth]{./figures/seg/Lcorrection}
+	\caption{The performance of the laser intensity correction formula on laser intensity values of different materials A) building, B) grass, C) concrete, D) cars}
+	\label{fig:Lcorrection}
+\end{figure*}
+
+\begin{table}[h]
+	\centering
+	\caption{Average and standard deviation of intensity values for the selected materials before and after applying laser intensity correction}
+	\label{tab:Lcor}
+	\begin{tabular}{l|cccc}
+		& $\mu_L$ & $\mu_{L_c}$ & $\sigma_L$ & $\sigma_{L_c}$ \\
+		\hline
+		building & 0.4260  & 0.3820        & 0.0734    & 0.0275          \\
+		grass    & 0.7577 & 0.5040        & 0.0981    & 0.0157          \\
+		concrete   & 0.7003 & 0.5061       & 0.1067    & 0.0205          \\
+		cars     & 0.6097 & 0.5394       & 0.0502    & 0.0422         
+	\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1\linewidth]{./figures/seg/fig6-LIvsCLI}
+	\caption{A) Original laser intensity PIMP (\textit{L}) B) corrected laser intensity PIMP ($L_c$).}
+	\label{fig:fig6-LIvsCLI}
+\end{figure}
+
+\subsection{Segmentation}
+
+Segmentation is often the first step in extracting information from a point cloud for high level processing. A segmentation algorithm groups point clouds that belong together according to some similarity measurement. The transformation of the data into a PIMP enables the use of computer vision-based image segmentation procedures for segmenting the lidar point cloud. 
+
+Because the generated PIMPs from scans usually have very large image dimension for high resolution scans (e.g., 7219$\times$2003 pixels for scan with a 0.05 degree fixed sampling increment), applying image segmentation algorithms usually requires significant computation time. A solution to reduce computation time is to scale the PIMPs down to a typical image size (e.g., less than 1000 pixels).  Among the many available interpolation methods for image rescaling, the bicubic method \cite{szeliski2010}, which calculates the output pixel value as weighted average of pixels in the nearest 4-by-4 neighborhood was chosen. The images can then be rescaled to their original sizes after the image segmentation algorithms are completed.  
+
+While there are numerous image segmentation algorithms available in the literature \cite{szeliski2010}, we utilized a graph-based image segmentation \cite{felzenszwalb2004}, which is one of the most common techniques. In graph-based techniques, each pixel represents a node and the difference between two pixels is defined as the edge between those pixels.
+Graph-based image segmentation is based on selecting edges from a graph, where each pixel corresponds to a node in the graph, and certain neighboring pixels are connected by undirected edges. After defining a predicate for measuring the evidence for a boundary between two regions using a graph based representation of the image, a segmentation algorithm that makes greedy decisions is applied for segmentations that satisfy global properties. There is one runtime parameter for this algorithm, which is a threshold value ($\tau$) that effectively sets a scale of observation. A larger $\tau$ causes a performance for larger components which results in larger clusters. The algorithm runs in nearly linear time $O(n log n)$ with the number of graph edges (pixels) and is fast in practice \cite{felzenszwalb2004}. The output of the graph based image segmentation is a label matrix with the same dimensions as the input PIMPs, where different areas are labeled with a different number. 
+
+Figure \ref{fig:fig7-segbitmaps} illustrates the results of the graph based segmentation on several example PIMPs of quad outside Memorial Union in Oregon State University (MU). This scene contains buildings at far distances that are partially occluded by trees and many patches of grass and concrete pavements as ground. As each PIMP describes a specific characteristic of the scene, there are some false results in segmentation on each individual PIMP. For example, $N_h$ and $N_v$ PIMPs are good descriptors to recognize vertical and horizontal planes in the scene but they can not distinguish between different materials of ground (e.g., concrete pavement and grass patches). Further, the range PIMP shows striped artifacts while the RGB PIMP has some false segments due to inconsistencies between adjacent images.  
+
+\begin{figure*}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{./figures/seg/fig7-segbitmaps}
+	\caption{The results of graph based segmentation on generated PIMPs on the generated PIMPs for the MU dataset.}
+	\label{fig:fig7-segbitmaps}
+\end{figure*}
+
+
+\subsection{Integration}
+
+In the integration step, we want to blend the results of the segmentation algorithm on the different input PIMPs in order to optimize the segmentation procedure. 
+In almost all lidar point cloud files, it is possible to generate range ($\rho$), normal vectors ($N_h, N_v$), incident angle ($\beta$) and laser intensity (\textit{L}) PIMPs. We named these bitmaps as basic PIMPs. Further, the raw laser intensity values can be improved by applying the proposed empirical formula ($L_c$). If the scanners are equipped with the digital cameras, the PIMPs of RGB bands of digital images can be created. As mentioned previously, the implementation of the HDR technique improves the RGB information by capturing several single exposure images to generate a HDR PIMP. 
+
+To integrate the results of image segmentation algorithm on the selected PIMPs, an edge detection procedure is applied on each label matrix by taking the gradient in u and v directions and identifying the absolute values which are greater than zero. The result consists of black and white pixels showing edges of the segments on an edge PIMP (EPIMP). The union of the all boundaries is completed by stacking of all the EPIMPs, which integrates the boundary properties of desired segmented images. 
+
+\begin{figure*}
+	\centering
+	\includegraphics[width=\textwidth]{./figures/seg/fig8-integration}
+	\caption{Integration process for the input PIMPs showing the edges of segmented images (EPIMPs) (A,B,C,D,E), union of the all boundaries (UPIMP) (F), and over-segmented label matrix (SPIMP)(G)}
+	\label{fig:fig8-integration}
+\end{figure*}
+
+The union of all EPIMPs (UPIMP) can be treated as a probability map showing the probability of pixels representing edges.  For example, a pixel with a zero value in the integrated image has the least probability of being an edge and a pixel in integrated image with the maximum value is more likely to be an edge. Pixels in the UPIMP with probability values greater than 0.5 are considered as the boarder pixels between different segments.
+
+Applying a modified version of a connected component algorithm on the UPIMP creates an over-segmented label matrix (SPIMP). Figure \ref{fig:fig8-integration} shows the integration procedure on an example of input PIMPs. 
+
+The neighboring labels for all clusters are found in the over-segmented label matrix (SPIMP) in a sparse matrix where each component contains the number of bordering pixels between each cluster. For example, $S(i,j) = n$ shows the number of pixels (\textit{n}) a common boundary between segment \textit{i} and \textit{j} in sparse matrix \textit{S}. 
+
+\subsection{Merging}
+This section describes the procedure to merge the clusters in the SPIMP based on the most similarity. Considering the number of input PIMPs as (K), to define the similarity/dissimilarity, feature vector (\textit{V}) for each cluster (\textit{i}) is defined as following: 
+
+\begin{equation}
+{{V}_{{{i}_{k}}}}=[{{\begin{matrix}
+		{{\mu }_{_{ik}}} & {{\sigma }_{_{ik}}}]  \\
+		\end{matrix}}^{T}} \qquad where \quad k=1...K
+\end{equation}
+
+\noindent which $V_{ik}$ is an array containing the averages ($\mu$) and standard deviations ($\sigma$) of the available PIMPs ($N_h, N_v, \rho, RGB, L$) for each segment (\textit{i}). 
+
+Considering the number of PIMPs  (\textit{K}), the distance ($\delta$) between two neighboring segments is simply calculated by a weighted Euclidean distance between their descriptor vectors as: 
+
+\begin{equation}
+\delta_{i,j}=\sum\nolimits_{k=1}^{K}{{{W}_{k}}}\centerdot ||{{V}_{{{i}_{k}}}}-{{V}_{{{j}_{k}}}}|| 
+\end{equation}
+
+By default, the values of the weight vector are equal to one. Increasing the weight value of a parameter, places more emphasis on that parameter in order to merge the neighboring clusters. 
+Calculating the distances between all clusters and their neighbors enables the use of an agglomerative merging algorithm. In the merging step, a user-defined threshold ($\lambda$) is set to merge the clusters with smaller distance values (i.e., segments with similar properties). When merging two clusters, the label of the segment with fewer pixels is change to the label of the larger segment. $\lambda$ can either be defined as the number of output clusters or percentage of the cluster reduction, depending on the desired implementation.
+
+\section{Results and discussion}
+\label{seg:result}
+
+The algorithm was tested on several TLS datasets that were acquired in different indoor and outdoor environments. All datasets feature a significant amount of occlusions and clutter, common to most TLS surveys. Table \ref{my-label} provides an overview of the data and samples used in this study.
+
+\begin{table*}[h]
+	\centering
+	\caption{General attributes of the indoor and outdoor datasets selected for testing}
+	\label{my-label}
+	\begin{tabular}{lcllll}
+		&                          & Site ID & \# of points & Dimensions & Description  \\
+		& &  &  (millions)&  (pixel) &    \\
+		\hline 
+		1 & \multirow{4}{*}{\rotatebox[origin=c]{90}{Indoor}}  & OW& 40.1 & 12054$\times$3337 & Inside of Owen Hall in OSU\\
+		& & \multicolumn{4}{l}{containing bricks, wooden doors, stairs, leather chars, etc.}\\
+		2 & & KR\_I  & 11.8 & 7219$\times$ 2003& Inside of the Kearney Hall building in OSU\\
+		& & \multicolumn{4}{l}{containing shiny floor, ceiling patches, stairs,  objects with various reflectivity}\\
+		\hline
+		3 & \multirow{8}{*}{\rotatebox[origin=]{90}{Outdoor}} & WD& 0.9  & 902$\times$1094   & Outside of Waldo Hall in OSU\\
+		& & \multicolumn{4}{l}{containing a building, trees, asphalt, concrete, cars, close to an open porch, etc.} \\
+		4 & & KR\_O         & 18.5 & 12054$\times$3337   & Outside of Kearney Hall in OSU\\
+		& & \multicolumn{4}{l}{an urban scene with a building, trees, stop signs, light poles, grass, concrete, etc. }\\
+		5 &   & MU   & 6.8   & 7217$\times$2003 & Quad outside the Memorial Union in OSU\\
+		& & \multicolumn{4}{l}{grass and concrete patches and far distance buildings partially occluded by trees.}\\
+		6 &   & ED    & 6.5  & 7219$\times$2003   & Unstable slope near Eddyville Oregon\\
+		& & \multicolumn{4}{l}{a scene containing asphalt road, rocky cliff partially vegetated, car, and power poles.}\\
+		\hline
+	\end{tabular}
+\end{table*}
+
+
+In implementation, users can freely choose their preferred PIMPs. However, for this research, three input data types were created for each scanned scene based on the proposed data improvement methods so that their influence on the results could be evaluated. Data type I contains all basic PIMPs and RGB‘s of automatic exposure single shot images. Data type II uses all PIMPs in data type I except the raw laser intensity values (\textit{L}) are replaced by their corresponding corrected values ($L_c$). Data type III includes basic PIMPs while laser intensity (\textit{L}) and RGB PIMPs are substituted by corrected laser intensities ($L_c$) and HDR PIMPs, respectively.
+
+\subsection{Merging threshold ($\lambda$)}
+As mentioned previously, the merging threshold ($\lambda$) controls the sensitivity of the segmentation. Increasing the merging threshold decreases the number of clusters and vice versa. Figure \ref{fig:fig10-merge_WD} shows the results of using different merging threshold on the Waldo Hall (WD) scanned scene. Using a smaller $\lambda$ results in more details and a larger number of small clusters, while increasing $\lambda$ results in fewer, but larger clusters.  
+
+%The magenta pixels in Figure \ref{fig:fig9-merge_Ed}(A) show that there are a lot of data gaps in this scan. Figures \ref{fig:fig9-merge_Ed}(B,C,D) illustrate the effect of the merging threshold ($\lambda$) on basic PIMPs from scan scene ED with three different merging values as 0.1, 0.5, and 0.8. Note that the output SPIMP with a larger merging threshold (0.8) has fewer clusters, but each cluster is larger and has more data points. For example, the scanned cliff in this scene is divided to many small segments in \ref{fig:fig9-merge_Ed}(B) while in \ref{fig:fig9-merge_Ed}(C,D) the cliff is grouped in fewer segments.
+%
+%\begin{figure}
+%	\centering
+%	\includegraphics[width=\textheight,height=\textwidth,keepaspectratio,angle=90]{./figures/seg/fig9-merge_Ed}
+%	\caption{A) RGB PIMP of ED scan data and a part of its projection on 3D points, B) segmentation results with $\lambda= 0.1$ C) segmentation results with $\lambda= 0.5$ D) segmentation results with $\lambda = 0.8$}
+%	\label{fig:fig9-merge_Ed}
+%\end{figure}
+%
+
+The effect of different merging thresholds is tested on data type II of the Waldo Hall scan (WD) scan scene. Figure \ref{fig:fig10-merge_WD}(A) is the HDR PIMP of the scene, in Figure \ref{fig:fig10-merge_WD}(B,C,D) the results of the proposed approach with three different $\lambda$ (0.1, 0.5, and 0.8) are presented. Subsets of the 3D models of the regions inside of the yellow boxes on each 2D panorama are shown on the right side of each 2D panorama. Because the area of interest spans the 0 and 360 degree marks (i.e., start and stop point of the scan) of the panorama, the box is divided into two sections.
+
+In this scene, Figure \ref{fig:fig10-merge_WD}(B) shows the roof and walls of the building in many segments, while \ref{fig:fig10-merge_WD}(C) has fewer segments to show different parts of the building. Increasing $\lambda$ merged smaller segments as in \ref{fig:fig10-merge_WD}(D) all parts of the building (roof and walls) are grouped together by using $\lambda=0.8$. 
+
+\begin{figure*}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{./figures/seg/fig10-merge_WD}
+	\caption{A) HDR PIMP of WD scan data with a small section highlighted in 3D, B) segmentation results with merging threshold = 0.1 C) segmentation results with merging threshold = 0.5 D) segmentation results with merging threshold = 0.8.  Note that the subset image shown in 3D spans the starting (0 deg) and end point (360 deg) of the scan.}
+	\label{fig:fig10-merge_WD}
+\end{figure*}
+
+\subsection{Improvements of laser correction and HDR imagery}
+The improvements in segmentation from utilizing an empirical function for laser intensity values and the HDR technique for digital images were evaluated for the data type I, II, and III of the test scans. Data type II has the HDR PIMP instead of RGB PIMP. In data type III HDR and $L_c$ PIMPs are used instead of RGB and $L$ PIMPs. For this portion of the analysis, the merging step was not applied on any of these test datasets since the full ability of segmentation was intended. 
+Figures \ref{fig:fig11_CLI_HDR_OW}-\ref{fig:fig19_CIL_HDR_KN} demonstrate the results of the segmentation approach on Owen Hall (OW), inside of Kearney Hall (KR\_I), and the outside of the Kearney Hall(KR\_O), respectively. In all these figures label A is the RGB PIMP or 3D view of the points colored by single shot digital images and labels B, C, and D are the results of the proposed segmentation approach on data types I, II, and III, respectively.
+
+Figure \ref{fig:fig11_CLI_HDR_OW} shows the results of the proposed method on different data types of Owen Hall scan scene in PIMP form. 3D points of the enclosed areas in blue circle and gray box are magnified in Figures \ref{fig:fig12_CLI_HDR_OW} and \ref{fig:fig13_CLI_HDR_OW}. Both of these figures highlight the artifact caused by luminance inconsistencies between adjacent images. These inconsistencies show up as a strong edge effect in images and finally lead to false segmentation. 
+
+\begin{figure*}[p]
+	\centering
+	\includegraphics[width=\textwidth]{./figures/seg/fig11_CLI_HDR_OW}
+	\caption{Improvements in segmentation from applying laser intensity and HDR technique corrections on the OW scan scene A) RGB PIMP B) segmentation results on data type I, C) segmentation results on data type II, D) segmentation results on data type III.  }
+	\label{fig:fig11_CLI_HDR_OW}
+\end{figure*}
+%Figure 11– the effects of data improvements on OW scan scene A) RGB PIMP B) segmentation results on data type I, C) segmentation results on data type II, D) segmentation results on data type III
+
+\begin{figure*}
+	\centering
+	\includegraphics[width=\textwidth]{./figures/seg/fig12_CLI_HDR_OW}
+	\caption{3D models of the enclosed area by blue circle in figure11. A) RGB colored points B) segmentation results on data type I, C) segmentation results on data type II, D) segmentation results on data type III}
+	\label{fig:fig12_CLI_HDR_OW}
+\end{figure*}
+%Figure 12–  3D models of the enclosed area by blue circle in figure11. A) RGB colored points B) segmentation on data type I, C) segmentation on data type II, D) segmentation on data type III
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{./figures/seg/fig13_CLI_HDR_OW}
+	\caption{3D models of the enclosed area by gray box in figure 11. A) RGB colored points B) segmentation results on data type I, C) segmentation results on data type II, D) segmentation results on data type III}
+	\label{fig:fig13_CLI_HDR_OW}
+\end{figure}
+%Figure 13– 3D models of the enclosed area by gray box in figure 11. A) RGB colored points B) segmentation on data type I, C) segmentation on data type II, D) segmentation on data type III
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth]{./figures/seg/fig14_CLI_HDR_OW}
+	\caption{3D models of the lobby of the Owen Hall building A) colored by single shot digital images B) segmentation results on data type I, C) segmentation results on data type II, D) segmentation results on data type III}
+	\label{fig:fig14_CLI_HDR_OW}
+\end{figure}
+%Figure 14 – 3D models of the lobby of the Owen Hall building A) colored by single shot digital images B) segmentation results on data type I, C) segmentation results on data type II, D) segmentation results on data type III
+
+Figures \ref{fig:fig14_CLI_HDR_OW} shows the 3D model of the lobby of the Owen Hall building. The inconsistencies between adjacent photographs with automatic exposures are clear as some lines in the figure. While the 3D view of the segmentation on data type II (Figure \ref{fig:fig14_CLI_HDR_OW},C) shows more details than Figure \ref{fig:fig14_CLI_HDR_OW},B because of laser intensity correction, segmentation on data type III (Figures \ref{fig:fig14_CLI_HDR_OW},D) looks even more intuitive by showing the door mat and segments all the points from the ground into one cluster. 
+
+The results of segmentation approach for the scan data from inside of the Kearney Hall building are presented in Figures \ref{fig:fig15_CLI_HDR_kear}-\ref{fig:fig17_CLI_HDR_kear}.
+The approach can clearly segments the plaques on the wall and in the glass case, picture frames, the TV, tables, chairs, floor, celling, lights, walls. The objects in the glass case are extracted very well, which is a tremendously difficult thing to do by manual extraction or most existing point cloud segmentation methods. 
+
+There is a high range of illuminance in the KN\_I scene because of incoming light from the outside as well as artificial lighting on the inside.  The illuminance is also further compounded by the fact that the floor is very shiny and reflects a substantial amount of light. The adjacent digital images obtained with automatic exposure (Figure \ref{fig:fig15_CLI_HDR_kear}(A) clearly show this illuminance variability in the scene. Again, the contrast between adjacent images caused a line in the RGB PIMP. The RGB PIMP is used to create data type I and II, so the floor of the building, which should be represented as a single object is grouped into several patches when using input data types I, and II. Also, the ceiling of the building is overly segmented by using data type I and II due to these inconsistencies. Figures \ref{fig:fig15_CLI_HDR_kear}(D) and \ref{fig:fig16_CLI_HDR_kear}(D), which are the results of segmentation on data type III, present more intuitive segmentation by grouping the floor section near the west wall (colored in red) as a single segment. Also in Figures \ref{fig:fig17_CLI_HDR_kear}(D) the door and the parts of the ceiling patches are segmented as uniform clusters. 
+
+
+\begin{figure*}
+	\centering
+	\includegraphics[width=\linewidth]{./figures/seg/fig15_CLI_HDR_kear}
+	\caption{A) RGB PIMP for the KN\_I scan scene. The influence of data improvement techniques on the KN\_I scan scene are shown for data types I (B), II (C), and III (D).}
+	\label{fig:fig15_CLI_HDR_kear}
+\end{figure*}
+%Figure 15 – the effects of data improvements on KN\_I scan scene A) RGB PIMP B) segmentation results on data type I, C) segmentation results on data type II, D) segmentation results on data type III
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth]{./figures/seg/fig16_CLI_HDR_kear}
+	\caption{3D models of the enclosed area by blue circle in figure15. A) automatic exposure RGB colored points B) segmentation results on data type I, C) segmentation results on data type II, D) segmentation results on data type III.}
+	\label{fig:fig16_CLI_HDR_kear}
+\end{figure}
+%Figure 16–  3D models of the enclosed area by blue circle in figure15. A) colored points B) segmentation on data type I, C) segmentation on data type II, D) segmentation on data type III
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth]{./figures/seg/fig17_CLI_HDR_kear}
+	\caption{ A)3D models of the enclosed area by green circle in figure 11. A) colored points B) segmentation results on data type I, C) segmentation results on data type II, D) segmentation results on data type III.}
+	\label{fig:fig17_CLI_HDR_kear}
+\end{figure}
+%Figure 17– A)3D models of the enclosed area by green circle in figure 11. A) colored points B) segmentation on data type I, C) segmentation on data type II, D) segmentation on data type III
+
+Figures \ref{fig:fig18_CIL_HDR_KN} and \ref{fig:fig19_CIL_HDR_KN} show the results of the proposed approach on a different scan scene from outside of the Kearney Hall building and its surrounding areas. The segmentation approach on data type II provides the ability to distinguish more clusters compared to data type I. For example, the extraction of the sign and parts of the pavements is more successful. Using corrected laser intensities groups the building sections together while also separating trees into different clusters because of the increased variability in values.  Applying both improvement techniques (data type III) results in the best segmentation for the path ways, stop signs, power poles and building. 
+
+\begin{figure*}
+	\includegraphics[width=\textwidth]{./figures/seg/fig18_CIL_HDR_KN}
+	\caption{A) RGB PIMP for the KN\_O scan scene. The influence of data improvement techniques on the KN\_O scan scene are shown for data types I (B), II (C), and III (D).}
+	\label{fig:fig18_CIL_HDR_KN}
+\end{figure*}
+%Figure 18 – the effects of data improvements on KN\_O scan scene A) RGB PIMP B) segmentation results on data type I, C) segmentation results on data type II, D) segmentation results on data type III
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth]{./figures/seg/fig19_CIL_HDR_KN}
+	\caption{3D models of the KN\_O scan scene and the results of the segmentation on its different data type. A) colored points B) segmentation on data type I, C) segmentation on data type II, D) segmentation on data type III.}
+	\label{fig:fig19_CIL_HDR_KN}
+\end{figure}
+%Figure 19–  3D models of the KN\_O scan scene and the results of the segmentation on its different data type. A) colored points B) segmentation on data type I, C) segmentation on data type II, D) segmentation on data type III
+
+In general, for all scans, by applying both proposed data improvement techniques (data type III), the segmentation approach grouped the points from the same objects together with less false segmentation.
+
+\subsection{Comparison to RANSAC algorithm}
+
+To evaluate the performance of the proposed segmentation, it is compared with the state-of-the-art RANSAC point cloud segmentation in an open source package, CloudCompare \cite{cloudcompare}. An automatic shape detection algorithm proposed by \cite{schnabel2007} is implemented in the software as ``RANSAC Shape Detection". The plugin is able to detect five types of primitives: planes, spheres, cylinders, cones, and tori. 
+
+Comparisons are made based on the execution time and qualitative results. The subsampling ratio to reduce the image size clearly has a significant influence on execution time, with minimal effect on the results. The execution times for the Owen Hall scan scene with four different subsampling ratio are measured as shown in Table \ref{table:segRANSAC}. To match this level of reduction when segmenting with the RANSAC algorithm, the RANSAC algorithm was applied to the same point cloud (Owen Hall) with different level of point cloud decimations reducing it to the same number of samples. Figure \ref{fig:fig20_RANSAC} plots the execution times of running RANSAC on Owen Hall scan with different levels of point cloud decimation and the execution times of the proposed approach with different amount of resizing. Table \ref{table:segRANSAC} and Figure \ref{fig:fig20_RANSAC} show that the proposed approach runs significantly faster than RANSAC for the dense datasets. When the datasets are significantly reduced in size, the performance of both approaches are similar.  
+As briefly mentioned in Section \ref{seg:lit}, the existing lidar point cloud segmentation techniques are not equipped to handle large datasets (several to tens of millions of points) whereas Figure \ref{fig:fig20_RANSAC} shows that the proposed approach works well for large datasets.  
+
+\begin{table*}
+	\centering
+	\caption{Comparison of the execution time between the proposed method and RANSAC for the Owen Hall dataset}	
+	\begin{tabular}{c|cccc}
+		 Subsampling ratio & 1 & 0.75 & 0.5 & 0.25 \\ 
+\hline		 Image size(pixels) & 12053 $\times$ 3337 & 9040 $\times$ 2503 & 6027 $\times$ 1669 & 3014 $\times$ 835 \\ 
+		 \# of points (Million) & 40.1 & 30.1 & 20.0 & 10.0 \\ 
+		 Proposed method time (sec) & 1555 & 713 & 256 & 160 \\ 
+		 RANSAC time (sec) & 6005 & 5406 & 1460 & 300 \\ 
+	\end{tabular}
+	\label{table:segRANSAC} 
+\end{table*}
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.9\linewidth]{./figures/seg/fig20_RANSAC}
+	\caption{Execution time for RANSAC and proposed approach on the Owen Hall scan scene with different subsampling ratio (N = 40.1 million points). }
+	\label{fig:fig20_RANSAC}
+\end{figure}
+%Figure 20– execution time for RANSAC and proposed approach on Owen Hall scan scene with different level of resolution 
+
+The qualitative results of RANSAC on the KN\_O scan is presented in Figure \ref{fig:fig22_RANSAC}. Because the points only fit on a very small portion of the complete primitive, usually these primitives are much larger than the actual cloud.
+% A few detected primitives (a plane in dark green, a sphere in violet, and a cylinder in green) by RANSAC are displayed in Figure \ref{fig:fig21_RANSAC}. These examples are clearly showing that the RANSAC is prone to false fits with large objects.  
+ Note that in these figures, each segment of the point cloud is designated by a distinct color that is randomly assigned.
+
+Figure \ref{fig:fig22_RANSAC} shows the qualitative comparison of the segmentation results applying the proposed algorithm and RANSAC. Figure \ref{fig:fig22_RANSAC}(A) shows the results of the proposed approach on a part of scan data, while the Figure \ref{fig:fig22_RANSAC}(B) is the same scene segmented by RANSAC. The color fluctuations present in the RANSAC results indicate that it cannot properly segment objects with complex shapes.  On the other hand, the proposed approach successfully grouped different patches of the ground, light pole, trunk and leaves of the trees.  
+
+
+%\begin{figure}
+%	\centering
+%	\includegraphics[width=\linewidth]{./figures/seg/fig21_RANSAC}
+%	\caption{The results of RANSAC on Kearney Hall outdoor scan scene.}
+%	\label{fig:fig21_RANSAC}
+%\end{figure}
+%%Figure 21 - The results of RANSAC on Kearney Hall outdoor scan scene
+
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth]{./figures/seg/fig22_RANSAC}
+	\caption{Qualitative comparison between the results of A) the proposed approach and B) RANSAC on the same scene.}
+	\label{fig:fig22_RANSAC}
+\end{figure}
+
+\subsection{Quantitative validation}
+
+Commonly, the performance of segmentation is evaluated by the reader's intuition and perception. Quantification, particularly in complex scenes, is difficult because of difficultly  in manually segmenting the point cloud beyond a certain level of detail. While the previous examples show the effectiveness of the algorithm on complex, cluttered scenes, this section will quantitatively evaluate the performance on a relatively simple scene that could be reasonably segmented manually.  This classroom has contains well defined ceiling tiles, more or less bare walls, a desk, door, trashcan, and white board (Figure \ref{fig:fig23_semantic}).
+A ground-truth segmentation was obtained by manually segmenting the RGB PIMP for each of the aforementioned objects. The results of the segmentation using the proposed algorithm were then compared to this manual segmentation, pixel to pixel to calculate the Matthew Correlation Coefficient (MCC) \cite{powers2011}. Figure \ref{fig:fig23_semantic} and Table \ref{segMCC} show the selected objects and resulting MCC values, respectively.
+The average MCC value of 0.84 shows the proposed approach is a reliable method for point cloud segmentation. However, it is worth mentioning the manual segmentation grossly oversimplifies the scene and ignore smaller objects like the speakers on the wall, eraser on the chalkboard, electrical outlets, etc. that were segmented using our approach.  Hence, if a more detailed manual segmentation were performed, the MCC values would be even higher.  
+
+\begin{table}[h]
+	\centering
+	\caption{MCC values for quantitative evaluation of the segmentation approach on a simple scan scene}
+	\label{segMCC}
+	\begin{tabular}{lll|lll}
+		N & Object\_ID & MCC  & N  & Object\_ID & MCC  \\
+		\hline
+		1 & Ceiling1   & 0.96 & 7  & Trashbin   & 0.68 \\
+		2 & Ceiling2   & 0.93 & 8  & Wall\_E    & 0.91 \\
+		3 & Column     & 0.76 & 9  & Wall\_N1   & 0.76 \\
+		4 & Desk       & 0.87 & 10 & Wall\_N2   & 0.85 \\
+		5 & Door       & 0.90 & 11 & Wall\_W    & 0.94 \\
+		6 & Floor      & 0.96 & 12 & Whiteboard & 0.90
+	\end{tabular}
+\end{table}
+
+\begin{figure*}
+	\centering
+	\includegraphics[width=0.97\textheight, height =\linewidth,keepaspectratio, angle=90]{./figures/seg/fig23_semantic}
+	\caption{The RGB PIMP of a simple scan scene (classroom) and its selected semantic objects.}
+	\label{fig:fig23_semantic}
+\end{figure*}
+
+%\begin{table}[h]
+%\centering
+%\caption{MCC values for quantitative evaluation of the segmentation approach on a simple scan scene}
+%\label{segMCC}
+%\begin{tabular}{llc}
+%N & object ID & MCC \\
+%\hline
+%1 & ceil1 & 0.96 \\
+%2 & ceil2 & 0.93 \\
+%3 & column & 0.76 \\
+%4 & desk & 0.87 \\
+%5 & door & 0.90 \\
+%6 & floor & 0.96 \\
+%7 & trashbin & 0.68 \\
+%8 & wall\_E & 0.91 \\
+%9 & wall\_N1 & 0.76 \\
+%10 & wall\_N2 & 0.85 \\
+%11 & wall\_W & 0.94 \\
+%12 & whiteboard & 0.90
+%\end{tabular}
+%\end{table}
+
+\section{Conclusions}
+\label{seg:con}
+
+Exploiting advanced HDR photography and available computer vision image segmentation algorithms improves lidar point cloud segmentation and visualization. 
+This research addressed three main objectives: 1) develop a segmentation approach by applying computer vision algorithms, 2) implement the HDR photography to improve colorimetric data and consequently segmentation results, 3) improve the performance of the segmentation by utilizing an empirical correction formula to correct laser intensity values. Herein, we will describe how each objective was fulfilled.  
+
+
+\noindent \textbf{1) Develop an efficient, fast, comprehensive point cloud segmentation approach by applying computer vision algorithms}\\
+\indent This research indicates that using PIMP representation of a scan simplifies data manipulation and primitive segmentation simpler to perform compared to directly processing the 3D point cloud. Minimal computing power is necessary to work with 2D images compared to the resources needed to display and manipulate massive 3D point cloud datasets. Further, the PIMP form enables one to utilize computer vision techniques for TLS point cloud processing.  In this research a novel approach is introduced by applying computer vision techniques for terrestrial laser point cloud processing. First, several PIMPs are generated out of scanned data sources. Then, an image segmentation algorithm is applied on each individual PIMP. The union of the edges of all label matrices is an integrated image that contains the edge information of all clustered images.
+
+Running a modified version of connected components on the black and white integrated image leads to an over-segmented label matrix. Calculating a dissimilarity array between clusters and their immediate neighbors allows users to set a threshold to merge clusters with smaller dissimilarities. This user-defined parameter enables the user to select their desired level of segmentation detail. The proposed approach are tested on several lidar datasets and compared with state of art RANSAC method available in CloudCompare software. The comparison showed reduction in computation time, qualitative improvement in point cloud segmentation, and minimization of user intervention.
+
+\noindent \textbf{2) Implement HDR photography to improve digital images and consequently segmentation result}\\
+\indent Enhancing point cloud visualization and segmentation using HDR asserts that implementation of HDR technique within the data capture process and subsequent processing workflow should represent the next significant development within terrestrial laser scanning and could give significant improvements to the colorimetric data. 
+Using the HDR PIMP in segmentation minimize artifacts due to luminance inconsistencies between adjacent images in areas of overlapping images.
+
+\noindent \textbf{3) Improve the performance of the segmentation by utilizing an empirical correction formula to correct laser intensity values for range and angle of incidence.}\\
+\indent An empirical correction function is introduced to modify the observed laser intensities to alleviate the effect of range (distance) and incident angle (target surface properties). Using the PIMP of corrected laser intensities as an input in this method groups parts of solid objects such as ground and buildings while splitting objects with various ranges of laser intensities such as trees and grass.
+
+%\section{Future work}
+%\label{seg:fut}
+%
+%Future work in this regards will pursue alternative image segmentation algorithms for the data arriving from individual channels. The authors are applying more advanced image segmentation methods such as contour detection to improve the performance of the approach. Also, different similarity/dissimilarity measurements are being tested to ameliorate the merging phase of this approach.
+%
+%The correction function for laser intensity needs some tuning and polishing to obtain more consistent results. This requires a systematic experiment with targets with well-defined reflectance values. 
+%Developing machine learning approaches to classify objects based on descriptive characteristics of the segments is the next prospect research. 
+
+\section*{Acknowledgments}
+This material is based upon work supported by the National Science Foundation under Grant No. 1351487.
+%% The Appendices part is started with the command \appendix;
+%% appendix sections are then done as normal sections
+%% \appendix
+
+%% \section{}
+%% \label{}\bibliography{elsarticle-template-harv}
+
+
+%% If you have bibdatabase file and want bibtex to generate the
+%% bibitems, please use
+\section*{References}
+%\bibliographystyle{elsarticle-harv} 
+%%  \bibliography{<your bibdatabase>}
+
+% Harvard
+\bibliographystyle{model2-names}
+%\biboptions{authoryear}
+
+\bibliography{REFERENCES}
+%% else use the following coding to input the bibitems directly in the
+%% TeX file.
+
+%\begin{thebibliography}{00}
+%%% \bibitem[Author(year)]{label}
+%%% Text of bibliographic item
+%\bibitem[ ()]{}
+%\end{thebibliography}
+
+
+%% Harvard
+%\bibliographystyle{model2-names.bst}\biboptions{authoryear}
+
+
+
+\end{document}
+
+\endinput
+%%
+%% End of file `elsarticle-template-harv.tex'.
